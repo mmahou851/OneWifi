@@ -1964,6 +1964,7 @@ bus_error_t get_ignite_link_quality_threshold(char *event_name, raw_data_t *p_da
 bus_error_t set_ignite_link_quality_threshold(char *event_name, raw_data_t *p_data,
     bus_user_data_t *user_data)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Entry %d \n", __func__, __LINE__);
     (void)user_data;
     char *pTmp = NULL;
     double threshold = 0.0;
@@ -2016,7 +2017,7 @@ bus_error_t set_ignite_link_quality_threshold(char *event_name, raw_data_t *p_da
 
     webconfig_data_free(data);
     free(data);
-
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Exit :%d \n", __func__, __LINE__);
     return bus_error_success;
 }
 

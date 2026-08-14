@@ -455,6 +455,7 @@ unsigned int dfs_fallback_channel(wifi_platform_property_t *wifi_prop, wifi_freq
 
 int start_radios(rdk_dev_mode_type_t mode, unsigned int radio_index)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Entry :%d \n", __func__, __LINE__);
     wifi_radio_operationParam_t *wifi_radio_oper_param = NULL;
     int ret = RETURN_OK;
     uint8_t index = 0;
@@ -548,7 +549,7 @@ int start_radios(rdk_dev_mode_type_t mode, unsigned int radio_index)
 
         startTime[index] = get_Uptime();
     }
-
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Exit :%d \n", __func__, __LINE__);
     return RETURN_OK;
 }
 
@@ -1107,13 +1108,18 @@ int start_wifi_health_monitor_thread(void)
 
 int scan_results_callback(int radio_index, wifi_bss_info_t **bss, unsigned int *num)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Entry :%d \n", __func__, __LINE__);
     scan_results_t  *res;
 
     if (*num > MAX_SCANNED_VAPS) {
         *num = MAX_SCANNED_VAPS;
     }
 
+    size_t old_size = sizeof(scan_results_t);
     size_t res_size = offsetof(scan_results_t, bss) + (*num) * sizeof(wifi_bss_info_t);
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Memory allocation comparison - old sizeof(scan_results_t): %zu bytes, "
+        "new offsetof-based size (num=%u): %zu bytes, saved: %zu bytes\n",
+        __FUNCTION__, __LINE__, old_size, *num, res_size, old_size - res_size);
     res = (scan_results_t *)calloc(1, res_size);
     if (!res) {
         wifi_util_dbg_print(WIFI_CTRL,"%s:%d Failed to allocate memory for scan_results_t\n", __FUNCTION__, __LINE__);
@@ -1137,7 +1143,7 @@ int scan_results_callback(int radio_index, wifi_bss_info_t **bss, unsigned int *
     }
     free(*bss);
     free(res);
-
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Exit :%d \n", __func__, __LINE__);
     return RETURN_OK;
 }
 

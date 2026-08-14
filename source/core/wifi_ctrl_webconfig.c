@@ -165,12 +165,14 @@ void webconfig_init_subdoc_data(webconfig_subdoc_data_t *data)
 
 void webconfig_init_subdoc_data_min(webconfig_subdoc_data_t *data)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Entry :%d \n", __func__, __LINE__);
     wifi_mgr_t *mgr = get_wifimgr_obj();
 
     memset(data, 0, sizeof(webconfig_subdoc_data_t));
     memcpy((unsigned char *)&data->u.decoded.config, (unsigned char *)&mgr->global_config, sizeof(wifi_global_config_t));
     memcpy((unsigned char *)&data->u.decoded.hal_cap, (unsigned char *)&mgr->hal_cap, sizeof(wifi_hal_capability_t));
     data->u.decoded.num_radios = getNumberRadios();
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Exit :%d \n", __func__, __LINE__);
 }
 
 int update_vap_params_to_hal_and_db(wifi_vap_info_t *vap, bool enable_or_disable) {
@@ -446,6 +448,7 @@ int webconfig_send_blaster_status(wifi_ctrl_t *ctrl)
 
 int webconfig_send_steering_clients_status(wifi_ctrl_t *ctrl)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Entry :%d \n", __func__, __LINE__);
     webconfig_subdoc_data_t *data = NULL;
 
     data = malloc(sizeof(webconfig_subdoc_data_t));
@@ -464,6 +467,7 @@ int webconfig_send_steering_clients_status(wifi_ctrl_t *ctrl)
     webconfig_data_free(data);
     free(data);
     data = NULL;
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Exit :%d \n", __func__, __LINE__);
     return RETURN_OK;
 }
 
@@ -2739,6 +2743,7 @@ int webconfig_hal_single_radio_apply(wifi_ctrl_t *ctrl, webconfig_subdoc_decoded
 
 int push_data_to_apply_pending_queue(webconfig_subdoc_data_t *data)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Entry :%d \n", __func__, __LINE__);
     wifi_ctrl_t *ctrl = (wifi_ctrl_t *)get_wifictrl_obj();
     webconfig_subdoc_data_t *temp_data;
     temp_data = (webconfig_subdoc_data_t *)malloc(sizeof(webconfig_subdoc_data_t));
@@ -2756,6 +2761,7 @@ int push_data_to_apply_pending_queue(webconfig_subdoc_data_t *data)
     queue_push(ctrl->vif_apply_pending_queue, temp_data);
     apps_mgr_analytics_event(&ctrl->apps_mgr, wifi_event_type_webconfig, wifi_event_webconfig_data_to_apply_pending_queue, data);
     free(temp_data);
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Exit :%d \n", __func__, __LINE__);
     return RETURN_OK;
 }
 
@@ -3489,6 +3495,7 @@ int create_station_with_default_credentials(webconfig_subdoc_data_t *data, int n
 
 void start_station_vaps(bool is_private, bool rf_status)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Entry :%d \n", __func__, __LINE__);
     webconfig_subdoc_data_t *data = NULL;
     char *str;
     unsigned int private_num_vaps = 0;
@@ -3534,6 +3541,7 @@ void start_station_vaps(bool is_private, bool rf_status)
 
     webconfig_data_free(data);
     free(data);
+    wifi_util_dbg_print(WIFI_CTRL, "%s Maniesh Exit :%d \n", __func__, __LINE__);
 }
 
 // register subdocs with webconfig_framework

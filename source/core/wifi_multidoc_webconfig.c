@@ -1814,6 +1814,7 @@ static pErr create_execRetVal(void)
 
 static pErr wifi_ignitewifi_exec_handler(void *blob)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Entry :%d \n", __func__, __LINE__);
     pErr execRetVal = NULL;
     webconfig_subdoc_data_t *data = NULL;
     cJSON *root = NULL;
@@ -1907,6 +1908,7 @@ done:
     if (data) {
         free(data);
     }
+    wifi_util_dbg_print(WIFI_CTRL, "%s: Maniesh Exit :%d \n", __func__, __LINE__);
     return execRetVal;
 }
 
