@@ -4052,6 +4052,12 @@ webconfig_error_t decode_link_report(cJSON *json,report_batch_t **out_report)
                 // Allocation failed – handle early exit
                 wifi_util_error_print(WIFI_WEBCONFIG,"Failed to allocate memory for %zu samples\n", sample_count);
                 lr->sample_count = 0;
+                if(sample_count == 0)
+                    continue;
+                for(size_t k = 0; k < i; k++)
+                    free(report->links[k].samples);
+                free(report->links);
+                free(report);
                 return webconfig_error_decode;
             }
             for (size_t j = 0; j < sample_count; j++) {

@@ -350,6 +350,9 @@ int wifi_vap_cfg_rollback_handler();
 webconfig_error_t webconfig_encode(webconfig_t *config, webconfig_subdoc_data_t *data, webconfig_subdoc_type_t type);
 webconfig_error_t webconfig_decode(webconfig_t *config, webconfig_subdoc_data_t *data, const char *str);
 webconfig_error_t webconfig_data_free(webconfig_subdoc_data_t *data);
+webconfig_error_t free_vap_object_macfilter_entries(webconfig_subdoc_data_t *data);
+webconfig_error_t free_vap_object_assoc_client_entries(webconfig_subdoc_data_t *data);
+webconfig_error_t free_vap_object_diff_assoc_client_entries(webconfig_subdoc_data_t *data);
 
 // decode api sets for hotspot
 webconfig_error_t decode_interworking_object(const cJSON *interworking, wifi_interworking_t *interworking_info);
