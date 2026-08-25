@@ -94,27 +94,37 @@ static bool onewifi_cb_ovsdb_read_json(char *buffer);
 /* purge in-flight RPC response handlers on disconnect */
 static void onewifi_ovsdb_purge_rpc_handlers(void)
 {
+    LOG(INFO, "%s:%d manish entry\n", __func__, __LINE__);
     struct rpc_response_handler *rh;
     while ((rh = ds_tree_remove_head(&json_rpc_handler_list)) != NULL)
         free(rh);
+
+    LOG(INFO, "%s:%d manish exit end\n", __func__, __LINE__);
 }
 
 /* on-connection callback */
 static void onewifi_cb_ovsdb_read(struct ev_loop *loop, struct ev_io *watcher, int revents)
 {
+    LOG(INFO, "%s:%d manish entry\n", __func__, __LINE__);
     ssize_t nr = 0;
     size_t ovs_buffer_size = 3*CHUNK_SIZE; /* 24kb */
     char *ovs_buffer = NULL;
 
     if (EV_ERROR & revents) {
         LOG(ERR,"%s:got invalid event\n",__func__);
+        {
+        LOG(INFO, "%s:%d manish exit 1\n", __func__, __LINE__);
         return;
+    }
     }
 
     ovs_buffer = (char *)calloc(1,ovs_buffer_size);
     if(!ovs_buffer) {
         LOG(ERR,"%s:Error in calloc\n",__func__);
+        {
+        LOG(INFO, "%s:%d manish exit 2\n", __func__, __LINE__);
         return;
+    }
     }
 
     // Receive message from client socket
@@ -123,7 +133,10 @@ static void onewifi_cb_ovsdb_read(struct ev_loop *loop, struct ev_io *watcher, i
     if((nr > 0) && ((size_t )nr == ovs_buffer_size)) {
         LOG(ERR,"%s:Recv Buffer is not sufficient ,received bytes=%zu\n",__func__,nr);
         free(ovs_buffer);
+        {
+        LOG(INFO, "%s:%d manish exit 3\n", __func__, __LINE__);
         return;
+    }
     }
     else if (nr == 0) {
         LOG(INFO, "%s:OVSDB read: EOF -- closing connection\n",__func__);
@@ -141,7 +154,10 @@ static void onewifi_cb_ovsdb_read(struct ev_loop *loop, struct ev_io *watcher, i
     }
 
     free(ovs_buffer);
-    return;
+    {
+        LOG(INFO, "%s:%d manish exit 4\n", __func__, __LINE__);
+        return;
+    }
 
 error:
     /*
@@ -171,7 +187,10 @@ error:
         retry++;
     }
 #endif
-    return;
+    {
+        LOG(INFO, "%s:%d manish exit end\n", __func__, __LINE__);
+        return;
+    }
 }
 
 static bool onewifi_cb_ovsdb_read_json(char *buf)

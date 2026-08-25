@@ -263,6 +263,7 @@ static char *get_frequency_band_from_radio_index(int radioIndex,
 
 void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
 {
+    wifi_util_dbg_print(WIFI_BLASTER, "%s:%d manish entry\n", __func__, __LINE__);
     char *telemetry_buf = NULL;
     const char * serviceName = "wifi";
     const char * dest = "event:raw.kestrel.reports.WifiSingleClientActiveMeasurement";
@@ -299,13 +300,19 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
     if(blaster == NULL)
     {
         wifi_util_dbg_print(WIFI_BLASTER, "%s:%d: wifi blaster active msmt data is null \n", __func__, __LINE__);
+        {
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d manish exit 1\n", __func__, __LINE__);
         return;
+    }
     }
 
     if (blaster->active_msmt_map == NULL) {
         if (sta_info != NULL) {
             wifi_util_dbg_print(WIFI_BLASTER, "%s:%d: Invalid arguments\n", __func__, __LINE__);
-            return;
+            {
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d manish exit 2\n", __func__, __LINE__);
+        return;
+    }
         } else {
             msmt_type = single_client_msmt_type_all;
         }
@@ -326,7 +333,10 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
                 free(radio_stats[i]);
                 radio_stats[i] = NULL;
             }
-            return;
+            {
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d manish exit 3\n", __func__, __LINE__);
+        return;
+    }
         }
         memset(radio_stats[radio_index],0, sizeof(radio_data_t));
         if (get_dev_stats_for_radio(radio_index, (radio_data_t *)radio_stats[radio_index]) != RETURN_OK) {
@@ -351,7 +361,10 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
             }
         }
         wifi_util_dbg_print(WIFI_BLASTER, "%s:%d: Unable to open schema file: %s\n", __func__, __LINE__, WIFI_SINGLE_CLIENT_BLASTER_AVRO_FILENAME);
+        {
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d manish exit 4\n", __func__, __LINE__);
         return;
+    }
     }
     else
     {
@@ -373,7 +386,10 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
             }
         }
         fclose(fp);
+        {
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d manish exit 5\n", __func__, __LINE__);
         return;
+    }
     }
     /*back to the start of the file*/
     rewind(fp);
@@ -397,7 +413,10 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
                 radio_stats[radio_index] = NULL;
             }
         }
+        {
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d manish exit 6\n", __func__, __LINE__);
         return;
+    }
     }
 
     memset(buff, 0, size + 1);
@@ -421,7 +440,10 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
                 radio_stats[radio_index] = NULL;
             }
         }
+        {
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d manish exit 7\n", __func__, __LINE__);
         return ;
+    }
     }
 
     buff[size]='\0';
@@ -439,7 +461,10 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
             }
         }
         wifi_util_dbg_print(WIFI_BLASTER, "%s:%d: Unable to parse active measurement schema, len: %d, error:%s\n", __func__, __LINE__, size, avro_strerror());
+        {
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d manish exit 8\n", __func__, __LINE__);
         return;
+    }
     }
 
     if(buff)
@@ -461,7 +486,10 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
         for (unsigned int i = 0; i < getNumberRadios(); i++) {
             free(radio_stats[i]);
         }
+        {
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d manish exit 9\n", __func__, __LINE__);
         return;
+    }
     }
     memset(buff, 0, MAX_BUFF_SIZE);
     wifi_util_dbg_print(WIFI_BLASTER, "%s:%d: filling MAGIC NUMBER in buff[0] \n", __func__, __LINE__);
@@ -1219,7 +1247,10 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
     telemetry_buf = malloc(sizeof(char)*1024);
     if (telemetry_buf == NULL) {
         wifi_util_error_print(WIFI_BLASTER,"%s:%d telemetry_buf allocation failed\r\n", __func__, __LINE__);
+        {
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d manish exit end\n", __func__, __LINE__);
         return;
+    }
     }
     memset(telemetry_buf, 0, sizeof(char)*1024);
     snprintf(telemetry_buf, sizeof(char)*1024, "%s %s",blaster->active_msmt.t_header.traceParent, blaster->active_msmt.t_header.traceState);
@@ -1230,6 +1261,8 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
         free(telemetry_buf);
         telemetry_buf = NULL;
     }
+
+    wifi_util_dbg_print(WIFI_BLASTER, "%s:%d manish exit end\n", __func__, __LINE__);
 }
 
 typedef struct blaster_report_pb {

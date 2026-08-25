@@ -3990,15 +3990,22 @@ webconfig_error_t decode_associated_clients_object(webconfig_subdoc_data_t *data
 }
 webconfig_error_t decode_link_report(cJSON *json,report_batch_t **out_report)
 {
+    wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d manish entry\n", __func__, __LINE__);
     if (!json || !out_report) {
         wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d: Validation Failed\n", __func__, __LINE__);
+        {
+        wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d manish exit 1\n", __func__, __LINE__);
         return webconfig_error_decode;
+    }
     }
 
     cJSON *link_array = cJSON_GetObjectItem(json, "LinkReport");
     if (!cJSON_IsArray(link_array)) {
         wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d: Validation Failed\n", __func__, __LINE__);
+        {
+        wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d manish exit 2\n", __func__, __LINE__);
         return webconfig_error_decode;
+    }
     }
 
     size_t link_count = cJSON_GetArraySize(link_array);
@@ -4006,7 +4013,10 @@ webconfig_error_t decode_link_report(cJSON *json,report_batch_t **out_report)
     report_batch_t *report = calloc(1, sizeof(report_batch_t));
     if (!report) {
         wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d: report calloc Failed\n", __func__, __LINE__);
+        {
+        wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d manish exit 3\n", __func__, __LINE__);
         return webconfig_error_decode;
+    }
     }
 
     report->link_count = link_count;
@@ -4014,7 +4024,10 @@ webconfig_error_t decode_link_report(cJSON *json,report_batch_t **out_report)
     if (!report->links) {
         wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d: report->links calloc Failed\n", __func__, __LINE__);
         free(report);
+        {
+        wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d manish exit 4\n", __func__, __LINE__);
         return webconfig_error_decode;
+    }
     }
 
     for (size_t i = 0; i < link_count; i++) {
@@ -4064,7 +4077,10 @@ webconfig_error_t decode_link_report(cJSON *json,report_batch_t **out_report)
                     free(report->links[k].samples);
                 free(report->links);
                 free(report);
-                return webconfig_error_decode;
+                {
+        wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d manish exit 5\n", __func__, __LINE__);
+        return webconfig_error_decode;
+    }
             }
             for (size_t j = 0; j < sample_count; j++) {
 
@@ -4094,7 +4110,10 @@ webconfig_error_t decode_link_report(cJSON *json,report_batch_t **out_report)
     }
 
     *out_report = report;
-    return webconfig_error_none;
+    {
+        wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d manish exit end\n", __func__, __LINE__);
+        return webconfig_error_none;
+    }
 }
 
 webconfig_error_t decode_mac_object(rdk_wifi_vap_info_t *rdk_vap_info, cJSON *obj_array )

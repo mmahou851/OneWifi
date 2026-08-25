@@ -1360,6 +1360,7 @@ int vap_svc_mesh_ext_clear_variable(vap_svc_t *svc)
 
 int vap_svc_mesh_ext_stop(vap_svc_t *svc, unsigned int radio_index, wifi_vap_info_map_t *map)
 {
+    wifi_util_info_print(WIFI_CTRL, "%s:%d manish entry\n", __func__, __LINE__);
     vap_svc_ext_t *ext = &svc->u.ext;
 
     wifi_util_info_print(WIFI_CTRL, "%s:%d mesh service stop\n", __func__, __LINE__);
@@ -1382,7 +1383,10 @@ int vap_svc_mesh_ext_stop(vap_svc_t *svc, unsigned int radio_index, wifi_vap_inf
         wifi_util_error_print(WIFI_CTRL,
             "%s:%d failed to stop mesh service: wrong radio index %d\n", __func__, __LINE__,
             radio_index);
+        {
+        wifi_util_info_print(WIFI_CTRL, "%s:%d manish exit 1\n", __func__, __LINE__);
         return -1;
+    }
     }
 
     if (ext->is_vap_started[radio_index]) {
@@ -1390,7 +1394,10 @@ int vap_svc_mesh_ext_stop(vap_svc_t *svc, unsigned int radio_index, wifi_vap_inf
         ext->is_vap_started[radio_index] = false;
     }
 
-    return 0;
+    {
+        wifi_util_info_print(WIFI_CTRL, "%s:%d manish exit end\n", __func__, __LINE__);
+        return 0;
+    }
 }
 
 static int process_ext_webconfig_set_data_sta_bssid(vap_svc_t *svc, void *arg)

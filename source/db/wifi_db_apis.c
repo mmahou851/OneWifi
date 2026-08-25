@@ -1766,6 +1766,7 @@ void callback_Wifi_Postassoc_Control_Config(ovsdb_update_monitor_t *mon,
 **************************************************************************************/
 int wifidb_update_interworking_config(char *vap_name, wifi_InterworkingElement_t *interworking)
 {
+    wifi_util_dbg_print(WIFI_DB, "%s:%d manish entry\n", __func__, __LINE__);
     struct schema_Wifi_Interworking_Config cfg, *pcfg;
     memset(&cfg, 0, sizeof(cfg));
     json_t *where;
@@ -1800,7 +1801,10 @@ int wifidb_update_interworking_config(char *vap_name, wifi_InterworkingElement_t
             ret = onewifi_ovsdb_table_update_where(g_wifidb->wifidb_sock_path, &table_Wifi_Interworking_Config, where, &cfg);
             if (ret == -1) {
                 wifidb_print("%s:%d WIFI DB update error !!!. Failed to update table_Wifi_Interworking_Config table \n",__func__, __LINE__);
-                return -1;
+                {
+        wifi_util_dbg_print(WIFI_DB, "%s:%d manish exit 1\n", __func__, __LINE__);
+        return -1;
+    }
             } else if (ret == 0) {
                 wifi_util_dbg_print(WIFI_DB,"%s:%d: nothing to update table_Wifi_Interworking_Config table\n", __func__, __LINE__);
             } else {
@@ -1809,12 +1813,18 @@ int wifidb_update_interworking_config(char *vap_name, wifi_InterworkingElement_t
         } else {
             if (onewifi_ovsdb_table_insert(g_wifidb->wifidb_sock_path, &table_Wifi_Interworking_Config, &cfg) == false) {
                 wifidb_print("%s:%d WIFI DB update error !!!. Failed to insert in table_Wifi_Interworking_Config \n",__func__, __LINE__);
-                return -1;
+                {
+        wifi_util_dbg_print(WIFI_DB, "%s:%d manish exit 2\n", __func__, __LINE__);
+        return -1;
+    }
              } else {
                 wifidb_print("%s:%d Updated WIFI DB. insert in table_Wifi_Interworking_Config successful. \n",__func__, __LINE__);
              }
         }
+        {
+        wifi_util_dbg_print(WIFI_DB, "%s:%d manish exit end\n", __func__, __LINE__);
         return 0;
+    }
 }
 
 /************************************************************************************
