@@ -91,6 +91,14 @@ static bool onewifi_cb_ovsdb_read_json(char *buffer);
  *  PROTECTED definitions
  *****************************************************************************/
 
+/* purge in-flight RPC response handlers on disconnect */
+static void onewifi_ovsdb_purge_rpc_handlers(void)
+{
+    struct rpc_response_handler *rh;
+    while ((rh = ds_tree_remove_head(&json_rpc_handler_list)) != NULL)
+        free(rh);
+}
+
 /* on-connection callback */
 static void onewifi_cb_ovsdb_read(struct ev_loop *loop, struct ev_io *watcher, int revents)
 {
@@ -143,6 +151,7 @@ error:
     free(ovs_buffer);
     ev_io_stop(loop, watcher);
     close(watcher->fd);
+    onewifi_ovsdb_purge_rpc_handlers();
 #if 0
     /* try to restart connection */
     int retry = 0;
