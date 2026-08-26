@@ -2176,7 +2176,12 @@ int update_json_param(char *p_key, char *partner_id, char *p_value, char *p_sour
 void sendWebpaMsg(char *serviceName, char *dest, char *trans_id, char *traceParent,
     char *traceState, char *contentType, char *payload, unsigned int payload_len)
 {
+    wifi_util_dbg_print(WIFI_DMCLI, "%s:%d manish entry\n", __func__, __LINE__);
     wifi_util_info_print(WIFI_DMCLI, "serviceName:%s dest:%s\n", serviceName, dest);
+    if (payload) {
+        free(payload);
+    }
+    wifi_util_dbg_print(WIFI_DMCLI, "%s:%d manish exit end\n", __func__, __LINE__);
 }
 
 int push_data_to_ssp_queue(const void *msg, unsigned int len, uint32_t type, uint32_t sub_type)

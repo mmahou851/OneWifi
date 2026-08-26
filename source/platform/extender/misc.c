@@ -112,6 +112,11 @@ void ext_daemonize()
 
 void ext_sendWebpaMsg(char *serviceName, char *dest, char *trans_id, char *traceParent, char *traceState, char *contentType, char *payload, unsigned int payload_len)
 {
+    wifi_util_dbg_print(WIFI_MON, "%s:%d manish entry\n", __func__, __LINE__);
+    if (payload) {
+        free(payload);
+    }
+    wifi_util_dbg_print(WIFI_MON, "%s:%d manish exit end\n", __func__, __LINE__);
      return;
 }
 

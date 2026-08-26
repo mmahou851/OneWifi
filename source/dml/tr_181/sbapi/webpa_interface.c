@@ -158,22 +158,34 @@ static void *handle_parodus(void *arg)
 void sendWebpaMsg(char *serviceName, char *dest, char *trans_id, char *traceParent,
     char *traceState, char *contentType, char *payload, unsigned int payload_len)
 {
+    wifi_util_dbg_print(WIFI_MON, "%s:%d manish entry\n", __func__, __LINE__);
     wrp_msg_t *wrp_msg;
     char source[MAX_PARAMETERNAME_LEN / 2] = { '\0' };
 
     if ((serviceName == NULL) || (dest == NULL) || (trans_id == NULL) || (contentType == NULL) ||
         (payload == NULL)) {
+        wifi_util_dbg_print(WIFI_MON, "%s:%d manish exit 1\n", __func__, __LINE__);
         return;
     }
 
     pthread_mutex_lock(&webpa_interface.lock);
+    if(webpa_interface.queue == NULL){
+        pthread_mutex_unlock(&webpa_interface.lock);
+        free(payload);
+        wifi_util_dbg_print(WIFI_MON, "%s:%d manish exit 2\n", __func__, __LINE__);
+        return;
+    }
 
     snprintf(source, sizeof(source), "mac:%s/%s", webpa_interface.deviceMAC, serviceName);
 
     wrp_msg = (wrp_msg_t *)malloc(sizeof(wrp_msg_t));
     if (wrp_msg == NULL) {
         wifi_util_error_print(WIFI_MON, "%s:%d - wrp_msg allocation failed\n", __func__, __LINE__);
+        if (payload) {
+            free(payload);
+        }
         pthread_mutex_unlock(&webpa_interface.lock);
+        wifi_util_dbg_print(WIFI_MON, "%s:%d manish exit 3\n", __func__, __LINE__);
         return;
     }
 
@@ -216,8 +228,13 @@ void sendWebpaMsg(char *serviceName, char *dest, char *trans_id, char *tracePare
         if (wrp_msg->u.event.headers == NULL) {
             wifi_util_error_print(WIFI_MON, "%s:%d:wrp headers allocation failed \n", __func__,
                 __LINE__);
+            free(wrp_msg->u.event.source);
+            free(wrp_msg->u.event.dest);
+            free(wrp_msg->u.event.content_type);
+            free(payload);
             free(wrp_msg);
             pthread_mutex_unlock(&webpa_interface.lock);
+            wifi_util_dbg_print(WIFI_MON, "%s:%d manish exit 4\n", __func__, __LINE__);
             return;
         }
 
@@ -244,6 +261,7 @@ void sendWebpaMsg(char *serviceName, char *dest, char *trans_id, char *tracePare
     pthread_cond_signal(&webpa_interface.cond);
 
     pthread_mutex_unlock(&webpa_interface.lock);
+    wifi_util_dbg_print(WIFI_MON, "%s:%d manish exit end\n", __func__, __LINE__);
 }
 
 int initparodusTask()
