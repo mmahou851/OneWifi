@@ -1169,9 +1169,11 @@ void Psm_Db_Write_MacFilter(wifi_mac_entry_param_t *mcfg)
 
     wifi_util_info_print(WIFI_PSM, "%s:%d update mac filter for vap index:%d\n", __func__, __LINE__,
         mcfg->vap_index);
+    wifi_util_dbg_print(WIFI_PSM, "%s:%d manish entry\n", __func__, __LINE__);
 
     if (isVapHotspot(mcfg->vap_index)) {
         wifi_util_dbg_print(WIFI_PSM, "%s:%d mac filter not supported for hotspot vap:%d\r\n",__func__, __LINE__, mcfg->vap_index);
+        wifi_util_dbg_print(WIFI_PSM, "%s:%d manish exit 1\n", __func__, __LINE__);
         return;
     }
 
@@ -1260,6 +1262,7 @@ void Psm_Db_Write_MacFilter(wifi_mac_entry_param_t *mcfg)
 exit:
     free(mcfg_mac);
     wifi_util_info_print(WIFI_PSM, "%s:%d update mac filter done\n", __func__, __LINE__);
+    wifi_util_dbg_print(WIFI_PSM, "%s:%d manish exit end\n", __func__, __LINE__);
 }
 
 void delete_psm_entry(char *record_name, int vap_index, int index)

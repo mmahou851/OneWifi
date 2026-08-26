@@ -4746,6 +4746,7 @@ int free_webconfig_msg_payload(wifi_event_subtype_t sub_type, webconfig_subdoc_d
 void handle_webconfig_event(wifi_ctrl_t *ctrl, const char *raw, unsigned int len,
     wifi_event_subtype_t subtype)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d manish entry\n", __func__, __LINE__);
     webconfig_t *config;
     webconfig_subdoc_data_t *data = NULL;
     wifi_mgr_t *mgr = (wifi_mgr_t *)get_wifimgr_obj();
@@ -4759,6 +4760,7 @@ void handle_webconfig_event(wifi_ctrl_t *ctrl, const char *raw, unsigned int len
     data = (webconfig_subdoc_data_t *)malloc(sizeof(webconfig_subdoc_data_t));
     if (data == NULL) {
         wifi_util_error_print(WIFI_CTRL,"%s:%d: Failed to allocate memory\n", __func__, __LINE__);
+        wifi_util_dbg_print(WIFI_CTRL, "%s:%d manish exit 1\n", __func__, __LINE__);
         return;
     }
     memset(data, 0, sizeof(webconfig_subdoc_data_t));
@@ -4778,6 +4780,7 @@ void handle_webconfig_event(wifi_ctrl_t *ctrl, const char *raw, unsigned int len
         if (raw == NULL) {
             free(data);
             data = NULL;
+            wifi_util_dbg_print(WIFI_CTRL, "%s:%d manish exit 2\n", __func__, __LINE__);
             return;
         }
 
@@ -4850,6 +4853,7 @@ void handle_webconfig_event(wifi_ctrl_t *ctrl, const char *raw, unsigned int len
             wifi_util_error_print(WIFI_CTRL, "%s:%d Empty raw data\n", __func__, __LINE__);
             free(data);
             data = NULL;
+            wifi_util_dbg_print(WIFI_CTRL, "%s:%d manish exit 3\n", __func__, __LINE__);
             return;
         }
         webconfig_decode(config, data, raw);
@@ -4863,6 +4867,7 @@ void handle_webconfig_event(wifi_ctrl_t *ctrl, const char *raw, unsigned int len
                 __func__, __LINE__);
             free(data);
             data = NULL;
+            wifi_util_dbg_print(WIFI_CTRL, "%s:%d manish exit 4\n", __func__, __LINE__);
             return;
         }
         apps_mgr_analytics_event(&ctrl->apps_mgr, wifi_event_type_webconfig, subtype, NULL);
@@ -4911,6 +4916,7 @@ void handle_webconfig_event(wifi_ctrl_t *ctrl, const char *raw, unsigned int len
 
     free(data);
     data = NULL;
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d manish exit end\n", __func__, __LINE__);
 }
 
 void handle_wifiapi_event(void *data, unsigned int len, wifi_event_subtype_t subtype)
