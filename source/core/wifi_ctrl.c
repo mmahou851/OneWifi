@@ -492,6 +492,7 @@ int start_radios(rdk_dev_mode_type_t mode, unsigned int radio_index)
     { 
         wifi_util_dbg_print(WIFI_CTRL,"%s:%d ACS KeepOut json_schema at boot up time = %s\n",__FUNCTION__,__LINE__,(char*)keep_out_json);
         process_acs_keep_out_channels_event((char*)keep_out_json);
+        free(keep_out_json);
     }
 
     for (index = 0; index < num_of_radios; index++) {
@@ -1135,9 +1136,9 @@ int scan_results_callback(int radio_index, wifi_bss_info_t **bss, unsigned int *
             *num = MAX_SCANNED_VAPS;
         }
     }
-
-    res = (scan_results_t *)calloc(1, sizeof(scan_results_t));
-    if(!res) {
+    size_t res_size = offsetof(scan_results_t, bss) + (*num) * sizeof(wifi_bss_info_t);
+    res = (scan_results_t *)calloc(1, res_size);
+    if (!res) {
         wifi_util_dbg_print(WIFI_CTRL,"%s:%d Failed to allocate memory for scan_results_t\n", __FUNCTION__, __LINE__);
         return RETURN_ERR;
     }
@@ -1149,7 +1150,7 @@ int scan_results_callback(int radio_index, wifi_bss_info_t **bss, unsigned int *
     }
 
     if (is_sta_enabled()) {
-        if(push_event_to_ctrl_queue(res, sizeof(scan_results_t), wifi_event_type_hal_ind,
+        if (push_event_to_ctrl_queue(res, res_size, wifi_event_type_hal_ind,
             wifi_event_scan_results, NULL) != RETURN_OK) {
             wifi_util_error_print(WIFI_CTRL,"%s:%d Failed to push scan_results to queue\n", __FUNCTION__, __LINE__);
             free(*bss);

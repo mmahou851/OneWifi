@@ -1291,6 +1291,10 @@ bus_error_t publish_endpoint_status(wifi_ctrl_t *ctrl, int connection_status)
     memset(&data, 0, sizeof(raw_data_t));
     data.data_type = bus_data_type_string;
     data.raw_data.bytes = malloc(MAX_STATUS_LEN);
+    if (data.raw_data.bytes == NULL) {
+        wifi_util_error_print(WIFI_CTRL, "%s:%d: Failed to allocate memory for endpoint status\n", __func__, __LINE__);
+        return bus_error_out_of_resources;
+    }
     data.raw_data_len = MAX_STATUS_LEN;
     memset(data.raw_data.bytes, '\0', MAX_STATUS_LEN);
     if (connection_status == 2) { // connected state
@@ -1303,7 +1307,6 @@ bus_error_t publish_endpoint_status(wifi_ctrl_t *ctrl, int connection_status)
     if (rc != bus_error_success) {
         wifi_util_dbg_print(WIFI_CTRL, "%s:%d: bus_event_publish_fn(): Event failed\n", __func__,
             __LINE__);
-        return rc;
     }
     if (data.raw_data.bytes) {
         free(data.raw_data.bytes);
@@ -1999,7 +2002,7 @@ bus_error_t set_ignite_link_quality_threshold(char *event_name, raw_data_t *p_da
         return bus_error_out_of_resources;
     }
 
-    webconfig_init_subdoc_data(data);
+    webconfig_init_subdoc_data_min(data);
     data->u.decoded.config.global_parameters.ignite_link_quality_threshold = threshold;
 
     if (webconfig_encode(&ctrl->webconfig, data, webconfig_subdoc_type_wifi_config) !=
