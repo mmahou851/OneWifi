@@ -1282,6 +1282,7 @@ bus_error_t get_endpoint_status(char *event_name, raw_data_t *p_data, bus_user_d
 
 bus_error_t publish_endpoint_status(wifi_ctrl_t *ctrl, int connection_status)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Enter\n", __func__, __LINE__);
     char name[MAX_STR_LEN] = { '\0' };
     bus_error_t rc = bus_error_success;
     wifi_util_info_print(WIFI_CTRL, "%s:%d Connection status updated as %d\n", __func__, __LINE__,
@@ -1293,6 +1294,7 @@ bus_error_t publish_endpoint_status(wifi_ctrl_t *ctrl, int connection_status)
     data.raw_data.bytes = malloc(MAX_STATUS_LEN);
     if (data.raw_data.bytes == NULL) {
         wifi_util_error_print(WIFI_CTRL, "%s:%d: Failed to allocate memory for endpoint status\n", __func__, __LINE__);
+        wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 1\n", __func__, __LINE__);
         return bus_error_out_of_resources;
     }
     data.raw_data_len = MAX_STATUS_LEN;
@@ -1312,6 +1314,7 @@ bus_error_t publish_endpoint_status(wifi_ctrl_t *ctrl, int connection_status)
         free(data.raw_data.bytes);
         data.raw_data.bytes = NULL;
     }
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit end\n", __func__, __LINE__);
     return rc;
 }
 int publish_endpoint_enable(void)
@@ -1967,6 +1970,7 @@ bus_error_t get_ignite_link_quality_threshold(char *event_name, raw_data_t *p_da
 bus_error_t set_ignite_link_quality_threshold(char *event_name, raw_data_t *p_data,
     bus_user_data_t *user_data)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Enter\n", __func__, __LINE__);
     (void)user_data;
     char *pTmp = NULL;
     double threshold = 0.0;
@@ -1976,6 +1980,7 @@ bus_error_t set_ignite_link_quality_threshold(char *event_name, raw_data_t *p_da
     if (event_name == NULL) {
         wifi_util_error_print(WIFI_CTRL, "%s:%d property name is not found\r\n", __FUNCTION__,
             __LINE__);
+        wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 1\n", __func__, __LINE__);
         return bus_error_invalid_input;
     }
 
@@ -1983,6 +1988,7 @@ bus_error_t set_ignite_link_quality_threshold(char *event_name, raw_data_t *p_da
     if ((p_data->data_type != bus_data_type_string) || (pTmp == NULL)) {
         wifi_util_error_print(WIFI_CTRL, "%s:%d wrong bus data_type:%x\n", __func__, __LINE__,
             p_data->data_type);
+        wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 2\n", __func__, __LINE__);
         return bus_error_invalid_input;
     }
 
@@ -1990,6 +1996,7 @@ bus_error_t set_ignite_link_quality_threshold(char *event_name, raw_data_t *p_da
     if (threshold < 0.0 || threshold > 1.0) {
         wifi_util_error_print(WIFI_CTRL, "%s:%d LinkQualityThreshold %f out of range [0.0, 1.0]\n",
             __func__, __LINE__, threshold);
+        wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 3\n", __func__, __LINE__);
         return bus_error_invalid_input;
     }
 
@@ -1999,6 +2006,7 @@ bus_error_t set_ignite_link_quality_threshold(char *event_name, raw_data_t *p_da
     data = (webconfig_subdoc_data_t *)malloc(sizeof(webconfig_subdoc_data_t));
     if (data == NULL) {
         wifi_util_error_print(WIFI_CTRL, "%s:%d malloc failed\n", __func__, __LINE__);
+        wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 4\n", __func__, __LINE__);
         return bus_error_out_of_resources;
     }
 
@@ -2011,6 +2019,7 @@ bus_error_t set_ignite_link_quality_threshold(char *event_name, raw_data_t *p_da
             __LINE__);
         webconfig_data_free(data);
         free(data);
+        wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 5\n", __func__, __LINE__);
         return bus_error_general;
     }
 
@@ -2019,6 +2028,10 @@ bus_error_t set_ignite_link_quality_threshold(char *event_name, raw_data_t *p_da
 
     webconfig_data_free(data);
     free(data);
+
+
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit end\n", __func__, __LINE__);
+
 
     return bus_error_success;
 }

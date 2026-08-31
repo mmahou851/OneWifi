@@ -1680,6 +1680,7 @@ void callback_Wifi_Postassoc_Control_Config(ovsdb_update_monitor_t *mon,
         struct schema_Wifi_Postassoc_Control_Config *old_rec,
         struct schema_Wifi_Postassoc_Control_Config *new_rec)
 {
+    wifi_util_dbg_print(WIFI_DB, "%s:%d Enter\n", __func__, __LINE__);
     int i = 0;
     int vap_index = 0;
     wifi_mgr_t *g_wifidb;
@@ -1690,6 +1691,7 @@ void callback_Wifi_Postassoc_Control_Config(ovsdb_update_monitor_t *mon,
 
     if (dbwritten == false) {
         wifi_util_info_print(WIFI_DB, "%s:%d: Db is not initialised yet\n", __func__, __LINE__);
+        wifi_util_dbg_print(WIFI_DB, "%s:%d Exit 1\n", __func__, __LINE__);
         return;
     }
 
@@ -1697,22 +1699,26 @@ void callback_Wifi_Postassoc_Control_Config(ovsdb_update_monitor_t *mon,
         wifi_util_dbg_print(WIFI_DB,"%s:%d:Delete\n", __func__, __LINE__);
         if(old_rec == NULL) {
             wifi_util_dbg_print(WIFI_DB,"%s:%d: Null pointer connection control config update failed \n",__func__, __LINE__);
+            wifi_util_dbg_print(WIFI_DB, "%s:%d Exit 2\n", __func__, __LINE__);
             return;
         }
         i = convert_vap_name_to_array_index(&g_wifidb->hal_cap.wifi_prop, old_rec->vap_name);
         if(i == -1) {
             wifi_util_dbg_print(WIFI_DB,"%s:%d: %s invalid vap name \n",__func__, __LINE__,old_rec->vap_name);
+            wifi_util_dbg_print(WIFI_DB, "%s:%d Exit 3\n", __func__, __LINE__);
             return;
         }
         vap_index = convert_vap_name_to_index(&g_wifidb->hal_cap.wifi_prop, old_rec->vap_name);
         if(vap_index == -1) {
             wifi_util_dbg_print(WIFI_DB,"%s:%d: %s invalid vap name \n",__func__, __LINE__,old_rec->vap_name);
+            wifi_util_dbg_print(WIFI_DB, "%s:%d Exit 4\n", __func__, __LINE__);
             return;
         }
 
         l_postassoc_ctrl_cfg = Get_wifi_object_postassoc_ctrl_parameter(vap_index);
         if(l_postassoc_ctrl_cfg == NULL) {
             wifi_util_dbg_print(WIFI_DB,"%s:%d: %s invalid Get_wifi_object_postassoc_ctrl_parameter \n",__func__, __LINE__,new_rec->vap_name);
+            wifi_util_dbg_print(WIFI_DB, "%s:%d Exit 5\n", __func__, __LINE__);
             return;
         }
         wifidb_init_postassoc_conn_ctrl_config_default(vap_index, l_postassoc_ctrl_cfg);
@@ -1720,18 +1726,21 @@ void callback_Wifi_Postassoc_Control_Config(ovsdb_update_monitor_t *mon,
         wifi_util_dbg_print(WIFI_DB,"%s:%d:New/Modify %d\n", __func__, __LINE__,mon->mon_type);
         if(new_rec == NULL) {
             wifi_util_dbg_print(WIFI_DB,"%s:%d: Null pointer postassoc control config update failed \n",__func__, __LINE__);
+            wifi_util_dbg_print(WIFI_DB, "%s:%d Exit 6\n", __func__, __LINE__);
             return;
         }
 
         i = convert_vap_name_to_index(&g_wifidb->hal_cap.wifi_prop, new_rec->vap_name);
         if(i == -1) {
             wifi_util_dbg_print(WIFI_DB,"%s:%d: %s invalid vap name \n",__func__, __LINE__,new_rec->vap_name);
+            wifi_util_dbg_print(WIFI_DB, "%s:%d Exit 7\n", __func__, __LINE__);
             return;
         }
 
         l_postassoc_ctrl_cfg = Get_wifi_object_postassoc_ctrl_parameter(i);
         if(l_postassoc_ctrl_cfg == NULL) {
             wifi_util_dbg_print(WIFI_DB,"%s:%d: %s invalid Get_wifi_object_postassoc_ctrl_parameter \n",__func__, __LINE__,new_rec->vap_name);
+            wifi_util_dbg_print(WIFI_DB, "%s:%d Exit 8\n", __func__, __LINE__);
             return;
         }
         pthread_mutex_lock(&g_wifidb->data_cache_lock);
@@ -1749,11 +1758,13 @@ void callback_Wifi_Postassoc_Control_Config(ovsdb_update_monitor_t *mon,
         vap_index = convert_vap_name_to_index(&g_wifidb->hal_cap.wifi_prop, new_rec->vap_name);
         if(vap_index == -1) {
             wifi_util_dbg_print(WIFI_DB,"%s:%d: %s invalid vap name \n",__func__, __LINE__,new_rec->vap_name);
+            wifi_util_dbg_print(WIFI_DB, "%s:%d Exit 9\n", __func__, __LINE__);
             return;
         }
     } else {
         wifi_util_dbg_print(WIFI_DB,"%s:%d:Unknown\n", __func__, __LINE__);
     }
+    wifi_util_dbg_print(WIFI_DB, "%s:%d Exit end\n", __func__, __LINE__);
 }
 
 /************************************************************************************

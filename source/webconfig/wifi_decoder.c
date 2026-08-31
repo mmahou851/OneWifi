@@ -3993,14 +3993,17 @@ webconfig_error_t decode_associated_clients_object(webconfig_subdoc_data_t *data
 }
 webconfig_error_t decode_link_report(cJSON *json,report_batch_t **out_report)
 {
+    wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Enter\n", __func__, __LINE__);
     if (!json || !out_report) {
         wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d: Validation Failed\n", __func__, __LINE__);
+        wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit 1\n", __func__, __LINE__);
         return webconfig_error_decode;
     }
 
     cJSON *link_array = cJSON_GetObjectItem(json, "LinkReport");
     if (!cJSON_IsArray(link_array)) {
         wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d: Validation Failed\n", __func__, __LINE__);
+        wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit 2\n", __func__, __LINE__);
         return webconfig_error_decode;
     }
 
@@ -4009,6 +4012,7 @@ webconfig_error_t decode_link_report(cJSON *json,report_batch_t **out_report)
     report_batch_t *report = calloc(1, sizeof(report_batch_t));
     if (!report) {
         wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d: report calloc Failed\n", __func__, __LINE__);
+        wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit 3\n", __func__, __LINE__);
         return webconfig_error_decode;
     }
 
@@ -4017,6 +4021,7 @@ webconfig_error_t decode_link_report(cJSON *json,report_batch_t **out_report)
     if (!report->links) {
         wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d: report->links calloc Failed\n", __func__, __LINE__);
         free(report);
+        wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit 4\n", __func__, __LINE__);
         return webconfig_error_decode;
     }
 
@@ -4070,6 +4075,7 @@ webconfig_error_t decode_link_report(cJSON *json,report_batch_t **out_report)
                 free(report->links);
                 free(report);
                 *out_report = NULL;
+                wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit 5\n", __func__, __LINE__);
                 return webconfig_error_decode;
             }
             for (size_t j = 0; j < sample_count; j++) {
@@ -4100,6 +4106,7 @@ webconfig_error_t decode_link_report(cJSON *json,report_batch_t **out_report)
     }
 
     *out_report = report;
+    wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit end\n", __func__, __LINE__);
     return webconfig_error_none;
 }
 

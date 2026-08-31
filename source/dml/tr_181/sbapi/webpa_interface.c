@@ -158,11 +158,13 @@ static void *handle_parodus(void *arg)
 void sendWebpaMsg(char *serviceName, char *dest, char *trans_id, char *traceParent,
     char *traceState, char *contentType, char *payload, unsigned int payload_len)
 {
+    wifi_util_dbg_print(WIFI_WEBPA, "%s:%d Enter\n", __func__, __LINE__);
     wrp_msg_t *wrp_msg;
     char source[MAX_PARAMETERNAME_LEN / 2] = { '\0' };
 
     if ((serviceName == NULL) || (dest == NULL) || (trans_id == NULL) || (contentType == NULL) ||
         (payload == NULL)) {
+        wifi_util_dbg_print(WIFI_WEBPA, "%s:%d Exit 1\n", __func__, __LINE__);
         return;
     }
 
@@ -170,6 +172,7 @@ void sendWebpaMsg(char *serviceName, char *dest, char *trans_id, char *tracePare
     if(webpa_interface.queue == NULL){
         pthread_mutex_unlock(&webpa_interface.lock);
         free(payload);
+        wifi_util_dbg_print(WIFI_WEBPA, "%s:%d Exit 2\n", __func__, __LINE__);
         return;
     }
 
@@ -182,6 +185,7 @@ void sendWebpaMsg(char *serviceName, char *dest, char *trans_id, char *tracePare
             free(payload);
         }
         pthread_mutex_unlock(&webpa_interface.lock);
+        wifi_util_dbg_print(WIFI_WEBPA, "%s:%d Exit 3\n", __func__, __LINE__);
         return;
     }
 
@@ -230,6 +234,7 @@ void sendWebpaMsg(char *serviceName, char *dest, char *trans_id, char *tracePare
             free(payload);
             free(wrp_msg);
             pthread_mutex_unlock(&webpa_interface.lock);
+            wifi_util_dbg_print(WIFI_WEBPA, "%s:%d Exit 4\n", __func__, __LINE__);
             return;
         }
 
@@ -256,6 +261,7 @@ void sendWebpaMsg(char *serviceName, char *dest, char *trans_id, char *tracePare
     pthread_cond_signal(&webpa_interface.cond);
 
     pthread_mutex_unlock(&webpa_interface.lock);
+    wifi_util_dbg_print(WIFI_WEBPA, "%s:%d Exit end\n", __func__, __LINE__);
 }
 
 int initparodusTask()

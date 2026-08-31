@@ -47,13 +47,14 @@ typedef int (*rdk_greylist_add_del_mac_t)(int apIndex, unsigned char macaddr[ETH
 
 static u8 wifi_get_snr_value(char *ifname,unsigned char *assoc_cli_mac)
 {
-
+    wifi_util_dbg_print(WIFI_HAL, "%s:%d Enter\n", __func__, __LINE__);
         unsigned char cli_macaddr[IEEE80211_ADDR_LEN+1]={0};
         int cli_SNR=0;
         int wlanIndex = -1;
         
         int wRet = wifi_getIndexFromName(ifname, &wlanIndex);
         if ( (wRet != RETURN_OK) || (wlanIndex <0) || (wlanIndex >= WIFI_INDEX_MAX) )
+            wifi_util_dbg_print(WIFI_HAL, "%s:%d Exit 1\n", __func__, __LINE__);
             return 1;
 
         wifi_associated_dev3_t *wifi_associated_dev_array=NULL, *sta_info=NULL;
@@ -72,11 +73,14 @@ static u8 wifi_get_snr_value(char *ifname,unsigned char *assoc_cli_mac)
                 }
             }
             free(wifi_associated_dev_array);    //freeing heap memory allocated in hal
+            wifi_util_dbg_print(WIFI_HAL, "%s:%d Exit 2\n", __func__, __LINE__);
             return cli_SNR;
         } else {
             free(wifi_associated_dev_array);
+            wifi_util_dbg_print(WIFI_HAL, "%s:%d Exit 3\n", __func__, __LINE__);
             return 1;
         }
+    wifi_util_dbg_print(WIFI_HAL, "%s:%d Exit end\n", __func__, __LINE__);
 }
 #endif //(FEATURE_SUPPORT_RADIUSGREYLIST)
 

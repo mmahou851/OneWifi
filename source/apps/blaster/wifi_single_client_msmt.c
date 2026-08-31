@@ -263,6 +263,7 @@ static char *get_frequency_band_from_radio_index(int radioIndex,
 
 void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
 {
+    wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Enter\n", __func__, __LINE__);
     char *telemetry_buf = NULL;
     const char * serviceName = "wifi";
     const char * dest = "event:raw.kestrel.reports.WifiSingleClientActiveMeasurement";
@@ -299,12 +300,14 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
     if(blaster == NULL)
     {
         wifi_util_dbg_print(WIFI_BLASTER, "%s:%d: wifi blaster active msmt data is null \n", __func__, __LINE__);
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Exit 1\n", __func__, __LINE__);
         return;
     }
 
     if (blaster->active_msmt_map == NULL) {
         if (sta_info != NULL) {
             wifi_util_dbg_print(WIFI_BLASTER, "%s:%d: Invalid arguments\n", __func__, __LINE__);
+            wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Exit 2\n", __func__, __LINE__);
             return;
         } else {
             msmt_type = single_client_msmt_type_all;
@@ -326,6 +329,7 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
                 free(radio_stats[i]);
                 radio_stats[i] = NULL;
             }
+            wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Exit 3\n", __func__, __LINE__);
             return;
         }
         memset(radio_stats[radio_index],0, sizeof(radio_data_t));
@@ -351,6 +355,7 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
             }
         }
         wifi_util_dbg_print(WIFI_BLASTER, "%s:%d: Unable to open schema file: %s\n", __func__, __LINE__, WIFI_SINGLE_CLIENT_BLASTER_AVRO_FILENAME);
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Exit 4\n", __func__, __LINE__);
         return;
     }
     else
@@ -373,6 +378,7 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
             }
         }
         fclose(fp);
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Exit 5\n", __func__, __LINE__);
         return;
     }
     /*back to the start of the file*/
@@ -397,6 +403,7 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
                 radio_stats[radio_index] = NULL;
             }
         }
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Exit 6\n", __func__, __LINE__);
         return;
     }
 
@@ -421,6 +428,7 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
                 radio_stats[radio_index] = NULL;
             }
         }
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Exit 7\n", __func__, __LINE__);
         return ;
     }
 
@@ -439,6 +447,7 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
             }
         }
         wifi_util_dbg_print(WIFI_BLASTER, "%s:%d: Unable to parse active measurement schema, len: %d, error:%s\n", __func__, __LINE__, size, avro_strerror());
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Exit 8\n", __func__, __LINE__);
         return;
     }
 
@@ -461,6 +470,7 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
         for (unsigned int i = 0; i < getNumberRadios(); i++) {
             free(radio_stats[i]);
         }
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Exit 9\n", __func__, __LINE__);
         return;
     }
     memset(buff, 0, MAX_BUFF_SIZE);
@@ -1219,6 +1229,7 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
     telemetry_buf = malloc(sizeof(char)*1024);
     if (telemetry_buf == NULL) {
         wifi_util_error_print(WIFI_BLASTER,"%s:%d telemetry_buf allocation failed\r\n", __func__, __LINE__);
+        wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Exit 10\n", __func__, __LINE__);
         return;
     }
     memset(telemetry_buf, 0, sizeof(char)*1024);
@@ -1230,6 +1241,7 @@ void upload_single_client_active_msmt_data(blaster_hashmap_t *sta_info)
         free(telemetry_buf);
         telemetry_buf = NULL;
     }
+    wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Exit end\n", __func__, __LINE__);
 }
 
 typedef struct blaster_report_pb {
