@@ -473,6 +473,7 @@ unsigned int dfs_fallback_channel(wifi_platform_property_t *wifi_prop, wifi_freq
 
 int start_radios(rdk_dev_mode_type_t mode, unsigned int radio_index)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Enter\n", __func__, __LINE__);
     wifi_radio_operationParam_t *wifi_radio_oper_param = NULL;
     int ret = RETURN_OK;
     uint8_t index = 0;
@@ -484,6 +485,7 @@ int start_radios(rdk_dev_mode_type_t mode, unsigned int radio_index)
     //Check for the number of radios
     if (num_of_radios > MAX_NUM_RADIOS) {
         wifi_util_error_print(WIFI_CTRL,"WIFI %s : Number of Radios %d exceeds supported %d Radios \n",__FUNCTION__, getNumberRadios(), MAX_NUM_RADIOS);
+        wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 1\n", __func__, __LINE__);
         return RETURN_ERR;
     }
     //Ensure RBUS event not missed in restart. Direct decode call as it is not conventional subdoc.
@@ -492,6 +494,7 @@ int start_radios(rdk_dev_mode_type_t mode, unsigned int radio_index)
     { 
         wifi_util_dbg_print(WIFI_CTRL,"%s:%d ACS KeepOut json_schema at boot up time = %s\n",__FUNCTION__,__LINE__,(char*)keep_out_json);
         process_acs_keep_out_channels_event((char*)keep_out_json);
+        free(keep_out_json);
     }
 
     for (index = 0; index < num_of_radios; index++) {
@@ -502,6 +505,7 @@ int start_radios(rdk_dev_mode_type_t mode, unsigned int radio_index)
         wifi_radio_oper_param = (wifi_radio_operationParam_t *)get_wifidb_radio_map(index);
         if (wifi_radio_oper_param == NULL) {
             wifi_util_error_print(WIFI_CTRL,"%s:wrong index for radio map: %d\n",__FUNCTION__, index);
+            wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 2\n", __func__, __LINE__);
             return RETURN_ERR;
         }
 
@@ -558,6 +562,7 @@ int start_radios(rdk_dev_mode_type_t mode, unsigned int radio_index)
         ret = wifi_hal_setRadioOperatingParameters(index, wifi_radio_oper_param);
         if (ret != RETURN_OK) {
             wifi_util_error_print(WIFI_CTRL,"%s: wifi radio parameter set failure: radio_index:%d\n",__FUNCTION__, index);
+            wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 3\n", __func__, __LINE__);
             return ret;
         } else {
             wifi_util_info_print(WIFI_CTRL,"%s: wifi radio parameter set success: radio_index:%d\n",__FUNCTION__, index);
@@ -565,6 +570,10 @@ int start_radios(rdk_dev_mode_type_t mode, unsigned int radio_index)
 
         startTime[index] = get_Uptime();
     }
+
+
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit end\n", __func__, __LINE__);
+
 
     return RETURN_OK;
 }
@@ -1127,6 +1136,7 @@ int start_wifi_health_monitor_thread(void)
 
 int scan_results_callback(int radio_index, wifi_bss_info_t **bss, unsigned int *num)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Enter\n", __func__, __LINE__);
     scan_results_t  *res;
 
     if (*num) {
@@ -1135,10 +1145,11 @@ int scan_results_callback(int radio_index, wifi_bss_info_t **bss, unsigned int *
             *num = MAX_SCANNED_VAPS;
         }
     }
-
-    res = (scan_results_t *)calloc(1, sizeof(scan_results_t));
-    if(!res) {
+    size_t res_size = offsetof(scan_results_t, bss) + (*num) * sizeof(wifi_bss_info_t);
+    res = (scan_results_t *)calloc(1, res_size);
+    if (!res) {
         wifi_util_dbg_print(WIFI_CTRL,"%s:%d Failed to allocate memory for scan_results_t\n", __FUNCTION__, __LINE__);
+        wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 1\n", __func__, __LINE__);
         return RETURN_ERR;
     }
 
@@ -1149,16 +1160,21 @@ int scan_results_callback(int radio_index, wifi_bss_info_t **bss, unsigned int *
     }
 
     if (is_sta_enabled()) {
-        if(push_event_to_ctrl_queue(res, sizeof(scan_results_t), wifi_event_type_hal_ind,
+        if (push_event_to_ctrl_queue(res, res_size, wifi_event_type_hal_ind,
             wifi_event_scan_results, NULL) != RETURN_OK) {
             wifi_util_error_print(WIFI_CTRL,"%s:%d Failed to push scan_results to queue\n", __FUNCTION__, __LINE__);
             free(*bss);
             free(res);
+            wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 2\n", __func__, __LINE__);
             return RETURN_ERR;
         }
     }
     free(*bss);
     free(res);
+
+
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit end\n", __func__, __LINE__);
+
 
     return RETURN_OK;
 }
@@ -4234,6 +4250,7 @@ int update_global_cache(wifi_vap_info_map_t *tgt_vap_map, rdk_wifi_vap_info_t *r
 #if defined(_PLATFORM_BANANAPI_R4_)
 int update_dml_cache(wifi_ctrl_t *ctrl, webconfig_subdoc_data_t *dml_cache_update_subdoc)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Enter\n", __func__, __LINE__);
     int ret = RETURN_OK;
     ctrl->webconfig_state |= ctrl_webconfig_state_vap_all_cfg_rsp_pending;
     if (webconfig_encode(&ctrl->webconfig, dml_cache_update_subdoc, webconfig_subdoc_type_dml) ==
@@ -4247,6 +4264,7 @@ int update_dml_cache(wifi_ctrl_t *ctrl, webconfig_subdoc_data_t *dml_cache_updat
         ret = RETURN_ERR;
     }
     webconfig_data_free(dml_cache_update_subdoc);
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit end\n", __func__, __LINE__);
     return ret;
 }
 #endif

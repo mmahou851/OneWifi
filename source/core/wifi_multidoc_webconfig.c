@@ -1814,6 +1814,7 @@ static pErr create_execRetVal(void)
 
 static pErr wifi_ignitewifi_exec_handler(void *blob)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Enter\n", __func__, __LINE__);
     pErr execRetVal = NULL;
     webconfig_subdoc_data_t *data = NULL;
     cJSON *root = NULL;
@@ -1824,6 +1825,7 @@ static pErr wifi_ignitewifi_exec_handler(void *blob)
 
     if (blob == NULL) {
         wifi_util_error_print(WIFI_CTRL, "%s: Null blob\n", __func__);
+        wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 1\n", __func__, __LINE__);
         return NULL;
     }
     wifi_util_info_print(WIFI_CTRL, "%s:%d\n", __func__, __LINE__);
@@ -1831,6 +1833,7 @@ static pErr wifi_ignitewifi_exec_handler(void *blob)
     execRetVal = create_execRetVal();
     if (execRetVal == NULL) {
         wifi_util_error_print(WIFI_CTRL, "%s: malloc failure\n", __func__);
+        wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 2\n", __func__, __LINE__);
         return NULL;
     }
 
@@ -1907,6 +1910,7 @@ done:
     if (data) {
         free(data);
     }
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit end\n", __func__, __LINE__);
     return execRetVal;
 }
 

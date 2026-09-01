@@ -184,11 +184,13 @@ bool validate_subdoc_data(webconfig_t *config, webconfig_subdoc_data_t *data)
 
 webconfig_error_t webconfig_set(webconfig_t *config, webconfig_subdoc_data_t *data)
 {
+    wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Enter\n", __func__, __LINE__);
     webconfig_subdoc_t  *doc;
     webconfig_error_t err = RETURN_OK;
 
     if (validate_subdoc_data(config, data) == false) {
         wifi_util_error_print(WIFI_WEBCONFIG,"%s:%d: Invalid data .. not parsable\n", __func__, __LINE__);
+        wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit 1\n", __func__, __LINE__);
         return webconfig_error_invalid_subdoc;
     }
 
@@ -196,6 +198,7 @@ webconfig_error_t webconfig_set(webconfig_t *config, webconfig_subdoc_data_t *da
     if (doc->access_check_subdoc(config, data) != webconfig_error_none) {
         wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d: invalid access for subdocument type:%d in entity:%d\n",
             __func__, __LINE__, doc->type, config->initializer);
+        wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit 2\n", __func__, __LINE__);
         return webconfig_error_not_permitted;
     }
 
@@ -218,11 +221,25 @@ webconfig_error_t webconfig_set(webconfig_t *config, webconfig_subdoc_data_t *da
                     && (config->apply_data(doc, data)) != webconfig_error_none) {
             wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d Subdocument apply failed\n", __func__, __LINE__);
             err = webconfig_error_apply;
+            if (data->type == webconfig_subdoc_type_mac_filter) {
+                free_vap_object_macfilter_entries(data);
+            } else if (data->type == webconfig_subdoc_type_associated_clients) {
+                free_vap_object_assoc_client_entries(data);
+                free_vap_object_diff_assoc_client_entries(data);
+            }
+            if (data->u.encoded.json != NULL) {
+                cJSON_Delete(data->u.encoded.json);
+                data->u.encoded.json = NULL;
+            }
         }
     }
 
 
     data->descriptor = 0;
+
+
+    wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit end\n", __func__, __LINE__);
+
 
     return err;
 

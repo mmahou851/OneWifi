@@ -1360,6 +1360,7 @@ int vap_svc_mesh_ext_clear_variable(vap_svc_t *svc)
 
 int vap_svc_mesh_ext_stop(vap_svc_t *svc, unsigned int radio_index, wifi_vap_info_map_t *map)
 {
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Enter\n", __func__, __LINE__);
     vap_svc_ext_t *ext = &svc->u.ext;
 
     wifi_util_info_print(WIFI_CTRL, "%s:%d mesh service stop\n", __func__, __LINE__);
@@ -1368,6 +1369,11 @@ int vap_svc_mesh_ext_stop(vap_svc_t *svc, unsigned int radio_index, wifi_vap_inf
         vap_svc_mesh_ext_disconnect(svc);
         cancel_all_running_timer(svc);
         vap_svc_mesh_ext_clear_variable(svc);
+        if (ext->candidates_list.scan_list != NULL) {
+            ext->candidates_list.scan_count = 0;
+            free(ext->candidates_list.scan_list);
+            ext->candidates_list.scan_list = NULL;
+        }
         ext->is_started = false;
     } else {
         wifi_util_info_print(WIFI_CTRL, "%s:%d mesh service already stopped\n", __func__, __LINE__);
@@ -1377,6 +1383,7 @@ int vap_svc_mesh_ext_stop(vap_svc_t *svc, unsigned int radio_index, wifi_vap_inf
         wifi_util_error_print(WIFI_CTRL,
             "%s:%d failed to stop mesh service: wrong radio index %d\n", __func__, __LINE__,
             radio_index);
+        wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit 1\n", __func__, __LINE__);
         return -1;
     }
 
@@ -1384,6 +1391,10 @@ int vap_svc_mesh_ext_stop(vap_svc_t *svc, unsigned int radio_index, wifi_vap_inf
         vap_svc_stop(svc, radio_index);
         ext->is_vap_started[radio_index] = false;
     }
+
+
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit end\n", __func__, __LINE__);
+
 
     return 0;
 }

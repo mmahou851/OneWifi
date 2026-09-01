@@ -147,6 +147,7 @@ int process_assoc_dev_stats(wifi_mon_stats_args_t *args, hash_map_t *sta_map, vo
 int execute_assoc_client_stats_api(wifi_mon_collector_element_t *c_elem, wifi_monitor_t *mon_data,
     unsigned long task_interval_ms)
 {
+    wifi_util_dbg_print(WIFI_MON, "%s:%d Enter\n", __func__, __LINE__);
     wifi_front_haul_bss_t *bss_param = NULL;
     wifi_associated_dev3_t *dev_array = NULL;
     wifi_mon_stats_args_t *args = NULL;
@@ -176,6 +177,7 @@ int execute_assoc_client_stats_api(wifi_mon_collector_element_t *c_elem, wifi_mo
     if (c_elem == NULL) {
         wifi_util_error_print(WIFI_MON, "%s:%d input arguments are NULL args : %p\n", __func__,
             __LINE__, c_elem);
+        wifi_util_dbg_print(WIFI_MON, "%s:%d Exit 1\n", __func__, __LINE__);
         return RETURN_ERR;
     }
 
@@ -183,6 +185,7 @@ int execute_assoc_client_stats_api(wifi_mon_collector_element_t *c_elem, wifi_mo
     if (args == NULL) {
         wifi_util_error_print(WIFI_MON, "%s:%d input arguments are NULL args : %p\n", __func__,
             __LINE__, args);
+        wifi_util_dbg_print(WIFI_MON, "%s:%d Exit 2\n", __func__, __LINE__);
         return RETURN_ERR;
     }
 
@@ -190,12 +193,14 @@ int execute_assoc_client_stats_api(wifi_mon_collector_element_t *c_elem, wifi_mo
 
     if ((unsigned)RETURN_ERR == radio) {
         wifi_util_error_print(WIFI_MON, "%s:%d Error in getting wifi_prop\n", __func__, __LINE__);
+        wifi_util_dbg_print(WIFI_MON, "%s:%d Exit 3\n", __func__, __LINE__);
         return RETURN_ERR;
     }
 
     if (mon_data->radio_presence[radio] == false) {
         wifi_util_info_print(WIFI_MON, "%s:%d radio_presence is false for radio : %d\n", __func__,
             __LINE__, radio);
+        wifi_util_dbg_print(WIFI_MON, "%s:%d Exit 4\n", __func__, __LINE__);
         return RETURN_OK;
     }
 
@@ -203,6 +208,7 @@ int execute_assoc_client_stats_api(wifi_mon_collector_element_t *c_elem, wifi_mo
     if (bss_param == NULL) {
         wifi_util_error_print(WIFI_MON, "%s:%d Failed to get bss info for vap index %d\n", __func__,
             __LINE__, args->vap_index);
+        wifi_util_dbg_print(WIFI_MON, "%s:%d Exit 5\n", __func__, __LINE__);
         return RETURN_ERR;
     }
 
@@ -224,6 +230,7 @@ int execute_assoc_client_stats_api(wifi_mon_collector_element_t *c_elem, wifi_mo
             }
         }
         pthread_mutex_unlock(&mon_data->data_lock);
+        wifi_util_dbg_print(WIFI_MON, "%s:%d Exit 6\n", __func__, __LINE__);
         return RETURN_OK;
     }
 
@@ -248,6 +255,7 @@ int execute_assoc_client_stats_api(wifi_mon_collector_element_t *c_elem, wifi_mo
             free(dev_array);
             dev_array = NULL;
         }
+        wifi_util_dbg_print(WIFI_MON, "%s:%d Exit 7\n", __func__, __LINE__);
         return RETURN_ERR;
     }
 
@@ -321,6 +329,7 @@ int execute_assoc_client_stats_api(wifi_mon_collector_element_t *c_elem, wifi_mo
                 dev_array = NULL;
             }
             pthread_mutex_unlock(&mon_data->data_lock);
+            wifi_util_dbg_print(WIFI_MON, "%s:%d Exit 8\n", __func__, __LINE__);
             return RETURN_ERR;
         }
     }
@@ -363,9 +372,18 @@ int execute_assoc_client_stats_api(wifi_mon_collector_element_t *c_elem, wifi_mo
                     memcpy(sta->link_mac, hal_sta->cli_MACAddress, sizeof(mac_address_t));
                     memcpy(hal_sta->cli_MACAddress, hal_sta->cli_MLDAddr, sizeof(mac_address_t));
                 }
-                hash_map_put(sta_map, strdup(sta_key), sta);
                 sta->last_connected_time.tv_sec = tv_now.tv_sec;
                 sta->last_connected_time.tv_nsec = tv_now.tv_nsec;
+                char *key = strdup(sta_key);
+                if (key == NULL) {
+                    wifi_util_error_print(WIFI_MON, "%s:%d strdup failed for sta_key:%s\n", __func__, __LINE__, sta_key);
+                    free(sta);
+                    break;
+                }
+                if (hash_map_put(sta_map, key, sta) != 0) {
+                    wifi_util_error_print(WIFI_MON, "%s:%d hash_map_put failed for key:%s\n", __func__, __LINE__, sta_key);
+                    break; /* put freed key+sta on queue_push failure (collection.c:175-183) */
+                }
             } else {
                 if (mld_mac_present != 0) {
                     memcpy(sta->link_mac, hal_sta->cli_MACAddress, sizeof(mac_address_t));
@@ -449,6 +467,7 @@ int execute_assoc_client_stats_api(wifi_mon_collector_element_t *c_elem, wifi_mo
             dev_array = NULL;
         }
         pthread_mutex_unlock(&mon_data->data_lock);
+        wifi_util_dbg_print(WIFI_MON, "%s:%d Exit 9\n", __func__, __LINE__);
         return RETURN_ERR;
     }
     sta = hash_map_get_first(sta_map);
@@ -625,6 +644,7 @@ int execute_assoc_client_stats_api(wifi_mon_collector_element_t *c_elem, wifi_mo
                 free(assoc_data);
                 assoc_data = NULL;
             }
+            wifi_util_dbg_print(WIFI_MON, "%s:%d Exit 10\n", __func__, __LINE__);
             return RETURN_ERR;
         }
         collect_stats->data_type = mon_stats_type_associated_device_stats;
@@ -639,6 +659,7 @@ int execute_assoc_client_stats_api(wifi_mon_collector_element_t *c_elem, wifi_mo
         free(assoc_data);
         free(collect_stats);
     }
+    wifi_util_dbg_print(WIFI_MON, "%s:%d Exit end\n", __func__, __LINE__);
     return RETURN_OK;
 }
 

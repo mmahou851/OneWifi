@@ -1160,6 +1160,7 @@ int set_psm_record_by_name(unsigned int instance_number, unsigned int data_index
 
 void Psm_Db_Write_MacFilter(wifi_mac_entry_param_t *mcfg)
 {
+    wifi_util_dbg_print(WIFI_SSP, "%s:%d Enter\n", __func__, __LINE__);
     int ret;
     unsigned int count = 0;
     hash_map_t *psm_mac_map;
@@ -1172,6 +1173,7 @@ void Psm_Db_Write_MacFilter(wifi_mac_entry_param_t *mcfg)
 
     if (isVapHotspot(mcfg->vap_index)) {
         wifi_util_dbg_print(WIFI_PSM, "%s:%d mac filter not supported for hotspot vap:%d\r\n",__func__, __LINE__, mcfg->vap_index);
+        wifi_util_dbg_print(WIFI_SSP, "%s:%d Exit 1\n", __func__, __LINE__);
         return;
     }
 
@@ -1201,14 +1203,14 @@ void Psm_Db_Write_MacFilter(wifi_mac_entry_param_t *mcfg)
                     snprintf(temp_mac_entry->device_name, sizeof(temp_mac_entry->device_name), "%s", mcfg->device_name);
                 }
                 wifi_util_dbg_print(WIFI_PSM, "%s:%d mac entry already present\r\n",__func__, __LINE__);
-                return;
+                goto exit;
             }
             ret = set_psm_record_by_name((mcfg->vap_index + 1), (mac_psm_data->data_index + 1), MacFilter, mcfg->mac);
             if (ret == RETURN_OK) {
                 temp_mac_entry = malloc(sizeof(wifi_mac_psm_param_t));
                 if (temp_mac_entry == NULL) {
                     wifi_util_dbg_print(WIFI_PSM, "%s:%d malloc failure\r\n",__func__, __LINE__);
-                    return;
+                    goto exit;
                 }
                 temp_mac_entry->data_index = (mac_psm_data->data_index + 1);
                 snprintf(temp_mac_entry->mac, sizeof(temp_mac_entry->mac), "%s", mcfg->mac);
@@ -1216,11 +1218,11 @@ void Psm_Db_Write_MacFilter(wifi_mac_entry_param_t *mcfg)
                     snprintf(temp_mac_entry->device_name, sizeof(temp_mac_entry->device_name), "%s", mcfg->device_name);
                 }
                 hash_map_put(psm_mac_map, mcfg_mac, temp_mac_entry);
+                mcfg_mac = NULL; /* ownership transferred to psm_mac_map; NULL so exit: free is a no-op */
                 count = hash_map_count(psm_mac_map);
                 update_macfilter_list((mcfg->vap_index + 1), count, psm_mac_map);
             }
         }
-        free(mcfg_mac);
     } else {
         if ((strlen(mcfg->device_name) != 0) && (strlen(mcfg->mac) != 0)) {
             ret = set_psm_record_by_name((mcfg->vap_index + 1), 1, MacFilterDevice, mcfg->device_name);
@@ -1236,14 +1238,14 @@ void Psm_Db_Write_MacFilter(wifi_mac_entry_param_t *mcfg)
                     snprintf(temp_mac_entry->device_name, sizeof(temp_mac_entry->device_name), "%s", mcfg->device_name);
                 }
                 wifi_util_dbg_print(WIFI_PSM, "%s:%d mac entry already present\r\n",__func__, __LINE__);
-                return;
+                goto exit;
             }
             ret = set_psm_record_by_name((mcfg->vap_index + 1), 1, MacFilter, mcfg->mac);
             if (ret == RETURN_OK) {
                 temp_mac_entry = malloc(sizeof(wifi_mac_psm_param_t));
                 if (temp_mac_entry == NULL) {
                     wifi_util_dbg_print(WIFI_PSM, "%s:%d malloc failure\r\n",__func__, __LINE__);
-                    return;
+                    goto exit;
                 }
                 temp_mac_entry->data_index = 1;
                 snprintf(temp_mac_entry->mac, sizeof(temp_mac_entry->mac), "%s", mcfg->mac);
@@ -1257,7 +1259,10 @@ void Psm_Db_Write_MacFilter(wifi_mac_entry_param_t *mcfg)
         }
     }
 
+exit:
+    free(mcfg_mac);
     wifi_util_info_print(WIFI_PSM, "%s:%d update mac filter done\n", __func__, __LINE__);
+    wifi_util_dbg_print(WIFI_SSP, "%s:%d Exit end\n", __func__, __LINE__);
 }
 
 void delete_psm_entry(char *record_name, int vap_index, int index)

@@ -154,6 +154,7 @@ int webconfig_blaster_apply(wifi_ctrl_t *ctrl, webconfig_subdoc_decoded_data_t *
 
 void webconfig_init_subdoc_data(webconfig_subdoc_data_t *data)
 {
+    wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Enter\n", __func__, __LINE__);
     wifi_mgr_t *mgr = get_wifimgr_obj();
 
     memset(data, 0, sizeof(webconfig_subdoc_data_t));
@@ -161,6 +162,7 @@ void webconfig_init_subdoc_data(webconfig_subdoc_data_t *data)
     memcpy((unsigned char *)&data->u.decoded.config, (unsigned char *)&mgr->global_config, sizeof(wifi_global_config_t));
     memcpy((unsigned char *)&data->u.decoded.hal_cap, (unsigned char *)&mgr->hal_cap, sizeof(wifi_hal_capability_t));
     data->u.decoded.num_radios = getNumberRadios();
+    wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit end\n", __func__, __LINE__);
 }
 
 void webconfig_init_subdoc_data_min(webconfig_subdoc_data_t *data)
@@ -446,12 +448,14 @@ int webconfig_send_blaster_status(wifi_ctrl_t *ctrl)
 
 int webconfig_send_steering_clients_status(wifi_ctrl_t *ctrl)
 {
+    wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Enter\n", __func__, __LINE__);
     webconfig_subdoc_data_t *data = NULL;
 
     data = malloc(sizeof(webconfig_subdoc_data_t));
     if (!data) {
         wifi_util_error_print(WIFI_CTRL, "%s:%d: Failed to allocate memory for webconfig_subdoc_data_t\n",
                 __FUNCTION__, __LINE__);
+        wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit 1\n", __func__, __LINE__);
         return RETURN_ERR;
     }
 
@@ -464,6 +468,7 @@ int webconfig_send_steering_clients_status(wifi_ctrl_t *ctrl)
     webconfig_data_free(data);
     free(data);
     data = NULL;
+    wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit end\n", __func__, __LINE__);
     return RETURN_OK;
 }
 
@@ -2766,25 +2771,30 @@ int webconfig_hal_single_radio_apply(wifi_ctrl_t *ctrl, webconfig_subdoc_decoded
 
 int push_data_to_apply_pending_queue(webconfig_subdoc_data_t *data)
 {
+    wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Enter\n", __func__, __LINE__);
     wifi_ctrl_t *ctrl = (wifi_ctrl_t *)get_wifictrl_obj();
     webconfig_subdoc_data_t *temp_data;
     temp_data = (webconfig_subdoc_data_t *)malloc(sizeof(webconfig_subdoc_data_t));
     if (temp_data == NULL) {
         wifi_util_error_print(WIFI_CTRL, "%s:%d: Unable to allocate memory for subdoc_data type:%d\n", __func__, __LINE__, data->type);
+        wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit 1\n", __func__, __LINE__);
         return RETURN_ERR;
     }
     memcpy(temp_data, data, sizeof(webconfig_subdoc_data_t));
     temp_data->u.encoded.raw = strdup(data->u.encoded.raw);
     if (temp_data->u.encoded.raw == NULL) {
         free(temp_data);
+        wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit 2\n", __func__, __LINE__);
         return RETURN_ERR;
     }
     if (queue_push(ctrl->vif_apply_pending_queue, temp_data) < 0) {
         webconfig_data_free(temp_data);
         free(temp_data);
+        wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit 3\n", __func__, __LINE__);
         return RETURN_ERR;
     }
     apps_mgr_analytics_event(&ctrl->apps_mgr, wifi_event_type_webconfig, wifi_event_webconfig_data_to_apply_pending_queue, data);
+    wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit end\n", __func__, __LINE__);
     return RETURN_OK;
 }
 
@@ -3518,6 +3528,7 @@ int create_station_with_default_credentials(webconfig_subdoc_data_t *data, int n
 
 void start_station_vaps(bool is_private, bool rf_status)
 {
+    wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Enter\n", __func__, __LINE__);
     webconfig_subdoc_data_t *data = NULL;
     char *str;
     unsigned int private_num_vaps = 0;
@@ -3529,6 +3540,7 @@ void start_station_vaps(bool is_private, bool rf_status)
     if (data == NULL) {
         wifi_util_error_print(WIFI_CTRL, "%s:%d malloc failed to allocate webconfig_subdoc_data_t, size %d\n",
             __func__, __LINE__, sizeof(webconfig_subdoc_data_t));
+        wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit 1\n", __func__, __LINE__);
         return;
     }
 
@@ -3559,10 +3571,11 @@ void start_station_vaps(bool is_private, bool rf_status)
         str = data->u.encoded.raw;
         push_event_to_ctrl_queue(str, strlen(str), wifi_event_type_webconfig,
             wifi_event_webconfig_set_data_dml, NULL);
-    } else {
-        webconfig_data_free(data);
     }
+
+    webconfig_data_free(data);
     free(data);
+    wifi_util_dbg_print(WIFI_WEBCONFIG, "%s:%d Exit end\n", __func__, __LINE__);
 }
 
 // register subdocs with webconfig_framework

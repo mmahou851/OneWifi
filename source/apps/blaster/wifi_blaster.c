@@ -2366,6 +2366,7 @@ int blaster_init(wifi_app_t *app, unsigned int create_flag)
 
 int blaster_deinit(wifi_app_t *app)
 {
+    wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Enter\n", __func__, __LINE__);
     if (app->data.u.blaster.g_active_msmt.worker_thread_id != 0) {
         pthread_cancel(app->data.u.blaster.g_active_msmt.worker_thread_id);
     }
@@ -2374,7 +2375,11 @@ int blaster_deinit(wifi_app_t *app)
     pthread_mutex_destroy(&app->data.u.blaster.g_active_msmt.worker_lock);
     push_blaster_config_event_to_monitor_queue(mon_stats_request_state_stop);
     pthread_mutex_destroy(&app->data.u.blaster.g_active_msmt.lock);
+    blaster_hashmap_t *s = hash_map_get_first(app->data.u.blaster.g_active_msmt.active_msmt_map);
+    for (; s; s = hash_map_get_next(app->data.u.blaster.g_active_msmt.active_msmt_map, s))
+        free(s->sta_active_msmt_data);
     hash_map_destroy(app->data.u.blaster.g_active_msmt.active_msmt_map);
+    wifi_util_dbg_print(WIFI_BLASTER, "%s:%d Exit end\n", __func__, __LINE__);
     return RETURN_OK;
 }
 #endif
