@@ -275,6 +275,7 @@ webconfig_error_t webconfig_easymesh_encode(webconfig_t *config,
     if (webconfig_encode(config, &webconfig_easymesh_data, type) != webconfig_error_none) {
         *str = NULL;
         wifi_util_error_print(WIFI_WEBCONFIG,"%s:%d: Easymesh encode failed\n", __func__, __LINE__);
+        webconfig_data_free(&webconfig_easymesh_data);
         return webconfig_error_encode;
     }
 
@@ -283,6 +284,7 @@ webconfig_error_t webconfig_easymesh_encode(webconfig_t *config,
         webconfig_easymesh_raw_data_ptr = NULL;
     }
     webconfig_easymesh_raw_data_ptr = webconfig_easymesh_data.u.encoded.raw;
+    webconfig_easymesh_data.u.encoded.raw = NULL;
 
     *str = webconfig_easymesh_raw_data_ptr;
     return webconfig_error_none;
@@ -1573,13 +1575,12 @@ webconfig_error_t translate_associated_clients_to_easymesh_sta_info(webconfig_su
                         break;
                     }
 
-                    em_sta_dev_info = (em_sta_info_t *)malloc(sizeof(em_sta_info_t));
+                    em_sta_dev_info = (em_sta_info_t *)calloc(1, sizeof(em_sta_info_t));
                     if (em_sta_dev_info == NULL) {
                         wifi_util_error_print(WIFI_WEBCONFIG,"%s:%d: sta_info malloc failed\n", __func__, __LINE__);
                         return webconfig_error_translate_to_easymesh;
                     }
 
-                    memset(em_sta_dev_info, 0, sizeof(em_sta_dev_info));
 
                     em_radio_info_t *radio_info = proto->get_radio_info(proto->data_model, vap->radio_index);
                     em_bss_info_t *bss_info = proto->get_bss_info(proto->data_model, rdk_vap_info->vap_index);
@@ -1608,6 +1609,7 @@ webconfig_error_t translate_associated_clients_to_easymesh_sta_info(webconfig_su
 
                     if (assoc_dev_data->sta_data.msg_data.data == NULL) {
                         wifi_util_error_print(WIFI_WEBCONFIG,"%s:%d: Association frame data not present\n", __func__, __LINE__);
+                        free(em_sta_dev_info);
                         return webconfig_error_translate_to_easymesh;
                     }
                     mgmt = (struct ieee80211_mgmt *) assoc_dev_data->sta_data.msg_data.data;

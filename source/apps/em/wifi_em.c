@@ -91,7 +91,7 @@ typedef struct {
 
 //em_ap_metrics_report_cache_t em_ap_metrics_report_cache[MAX_NUM_RADIOS] = { 0 };
 em_ap_metrics_report_cache_t em_ap_metrics_report_cache = { 0 };
-client_assoc_stats_t client_assoc_stats[MAX_NUM_RADIOS] = { 0 };
+static client_assoc_stats_t *client_assoc_stats = NULL;
 client_type_data_t client_type_info = { 0 };
 
 /* Internal helper that carries the fields for a failed-connection event.
@@ -659,8 +659,10 @@ int assoc_client_response(wifi_app_t *app, wifi_provider_response_t *provider_re
         return RETURN_ERR;
     }
 
+    /* Clear only the previously valid entries instead of the full 100-slot array
+       to avoid forcing ~300KB of pages resident per VAP each stats interval. */
     memset(client_assoc_stats[radio_index].client_assoc_data[vap_array_index].assoc_stats, 0,
-        sizeof(client_assoc_stats[radio_index].client_assoc_data[vap_array_index].assoc_stats));
+        client_assoc_stats[radio_index].client_assoc_data[vap_array_index].stat_array_size * sizeof(sta_data_t));
     memcpy(client_assoc_stats[radio_index].client_assoc_data[vap_array_index].assoc_stats,
         provider_response->stat_pointer, (sizeof(sta_data_t) * provider_response->stat_array_size));
     client_assoc_stats[radio_index].client_assoc_data[vap_array_index].stat_array_size =
@@ -1633,8 +1635,23 @@ static int em_handle_disassoc_device(wifi_app_t *app, void *arg)
     int arr_vap_index = -1;
     wifi_vap_info_t *vap_info = NULL;
     wifi_associated_dev3_timestamp_t *stats = NULL;
+    sta_client_info_t *t_sta_data = NULL;
 
     wifi_util_dbg_print(WIFI_EM, "%s:%d : Sta disassoc event \n", __func__, __LINE__);
+
+    /* Remove client type entry early — only needs the STA MAC, independent of
+       radio/vap/stats lookups that may bail out below. */
+    to_mac_str(assoc_data->dev_stats.cli_MACAddress, client_mac);
+    t_sta_data = (sta_client_info_t *)hash_map_remove(
+        client_type_info.sta_client_type.client_type_map, client_mac);
+    if (t_sta_data != NULL) {
+        wifi_util_dbg_print(WIFI_EM, "%s:%d: Removed client type entry for Mac %s\n",
+            __func__, __LINE__, client_mac);
+        free(t_sta_data);
+    } else {
+        wifi_util_dbg_print(WIFI_EM, "%s:%d: No client type entry for Mac %s, skipping\n",
+            __func__, __LINE__, client_mac);
+    }
 
     radio_index = get_radio_index_for_vap_index(wifi_prop, vap_index);
     if (radio_index == RETURN_ERR) {
@@ -1678,18 +1695,6 @@ static int em_handle_disassoc_device(wifi_app_t *app, void *arg)
     }
     wifi_util_dbg_print(WIFI_EM, "%s:%d: Sta Mac %s disassociated\n", __func__,
         __LINE__, sta_mac_str);
-
-    to_mac_str((unsigned char *)assoc_data->dev_stats.cli_MACAddress, client_mac);
-    sta_client_info_t *t_sta_data = (sta_client_info_t *)hash_map_remove(
-        client_type_info.sta_client_type.client_type_map, client_mac);
-
-    if (t_sta_data == NULL) {
-        wifi_util_error_print(WIFI_EM, "%s:%d: Mac %s not present in hash map\n", __func__,
-            __LINE__, client_mac);
-        return 0;
-    }
-
-    free(t_sta_data);
 
     return 0;
 }
@@ -3470,6 +3475,13 @@ int em_init(wifi_app_t *app, unsigned int create_flag)
 
     client_type_info.sta_client_type.client_type_map = hash_map_create();
 
+    client_assoc_stats = calloc(getNumberRadios(), sizeof(client_assoc_stats_t));
+    if (client_assoc_stats == NULL) {
+        wifi_util_error_print(WIFI_EM, "%s:%d: calloc failed for client_assoc_stats\n",
+            __func__, __LINE__);
+        return RETURN_ERR;
+    }
+
     ap_report_cache_init();
 
     rc = get_bus_descriptor()->bus_open_fn(&app->handle, component_name);
@@ -3541,6 +3553,11 @@ int em_deinit(wifi_app_t *app)
             t_sta_data);
     }
     hash_map_destroy(client_type_info.sta_client_type.client_type_map);
+
+    if (client_assoc_stats != NULL) {
+        free(client_assoc_stats);
+        client_assoc_stats = NULL;
+    }
 
     return RETURN_OK;
 }
