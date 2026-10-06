@@ -672,6 +672,8 @@ static void wifiapi_handle_get_ApAssocDeviceDiagnosticResult(char **args, unsign
     }
 }
 
+#define WIFIAPI_MAX_JSON_SIZE (256 * 1024)
+
 void process_wifiapi_command(char *command, unsigned int len)
 {
     char input[1024];
@@ -686,6 +688,8 @@ void process_wifiapi_command(char *command, unsigned int len)
     webconfig_subdoc_data_t *data = NULL;
     wifi_mgr_t *mgr = (wifi_mgr_t *)get_wifimgr_obj();
     wifi_ctrl_t *ctrl = (wifi_ctrl_t *)get_wifictrl_obj();
+    struct stat st;
+    size_t bytes_read;
     FILE *json_file;
     long fsize;
     char *raw = NULL;
@@ -749,27 +753,35 @@ void process_wifiapi_command(char *command, unsigned int len)
         }
         //read file - json
         json_file = fopen(args[2], "rb");
-        if( json_file == NULL) {
+        if (json_file == NULL) {
             snprintf(buff, sizeof(buff), "%s: failed to open file '%s'", args[0], args[2]);
             goto publish;
         }
-        fseek(json_file, 0, SEEK_END);
-        fsize = ftell(json_file);
-        fseek(json_file, 0, SEEK_SET);
-        if (fsize == 0) {
-            snprintf(buff, sizeof(buff), "%s: Invalid content size (0). file '%s'", args[0], args[2]);
+        if (fstat(fileno(json_file), &st) != 0 || !S_ISREG(st.st_mode)) {
+            snprintf(buff, sizeof(buff), "%s: invalid input file type '%s'", args[0], args[2]);
             fclose(json_file);
             goto publish;
         }
-        raw = malloc(fsize + 1);
-        if(raw == NULL) {
+        if (st.st_size <= 0 || st.st_size > WIFIAPI_MAX_JSON_SIZE) {
+            snprintf(buff, sizeof(buff), "%s: invalid content size (%ld). file '%s'",
+                args[0], (long)st.st_size, args[2]);
+            fclose(json_file);
+            goto publish;
+        }
+        raw = calloc(1, (size_t)st.st_size + 1);
+        if (raw == NULL) {
             snprintf(buff, sizeof(buff), "%s: failed to allocate memory", args[0]);
             fclose(json_file);
             goto publish;
         }
-        fread(raw, fsize, 1, json_file);
+        bytes_read = fread(raw, 1, (size_t)st.st_size, json_file);
         fclose(json_file);
-        raw[fsize] = '\0';
+        if (bytes_read != (size_t)st.st_size) {
+            snprintf(buff, sizeof(buff), "%s: failed to read complete file '%s'", args[0], args[2]);
+            free(raw);
+            goto publish;
+        }
+        raw[bytes_read] = '\0';
 
         //webconfig decode
         config = &ctrl->webconfig;
@@ -828,27 +840,35 @@ void process_wifiapi_command(char *command, unsigned int len)
         }
         //read file - json
         json_file = fopen(args[2], "rb");
-        if( json_file == NULL) {
+        if (json_file == NULL) {
             snprintf(buff, sizeof(buff), "%s: failed to open file '%s'", args[0], args[2]);
             goto publish;
         }
-        fseek(json_file, 0, SEEK_END);
-        fsize = ftell(json_file);
-        fseek(json_file, 0, SEEK_SET);
-        if (fsize == 0) {
-            snprintf(buff, sizeof(buff), "%s: Invalid content size (0). file '%s'", args[0], args[2]);
+        if (fstat(fileno(json_file), &st) != 0 || !S_ISREG(st.st_mode)) {
+            snprintf(buff, sizeof(buff), "%s: invalid input file type '%s'", args[0], args[2]);
             fclose(json_file);
             goto publish;
         }
-        raw = malloc(fsize + 1);
-        if(raw == NULL) {
+        if (st.st_size <= 0 || st.st_size > WIFIAPI_MAX_JSON_SIZE) {
+            snprintf(buff, sizeof(buff), "%s: invalid content size (%ld). file '%s'",
+                args[0], (long)st.st_size, args[2]);
+            fclose(json_file);
+            goto publish;
+        }
+        raw = calloc(1, (size_t)st.st_size + 1);
+        if (raw == NULL) {
             snprintf(buff, sizeof(buff), "%s: failed to allocate memory", args[0]);
             fclose(json_file);
             goto publish;
         }
-        fread(raw, fsize, 1, json_file);
+        bytes_read = fread(raw, 1, (size_t)st.st_size, json_file);
         fclose(json_file);
-        raw[fsize] = '\0';
+        if (bytes_read != (size_t)st.st_size) {
+            snprintf(buff, sizeof(buff), "%s: failed to read complete file '%s'", args[0], args[2]);
+            free(raw);
+            goto publish;
+        }
+        raw[bytes_read] = '\0';
 
         //webconfig decode
         config = &ctrl->webconfig;
