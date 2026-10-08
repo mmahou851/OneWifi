@@ -247,7 +247,12 @@ webconfig_error_t decode_anqp_object(const cJSON *anqp, wifi_interworking_t *int
         wifi_venueName_t *venueBuf = (wifi_venueName_t *)next_pos;
         next_pos += sizeof(venueBuf->length); //Will be filled at the end
         decode_param_string(anqpEntry,"Language",anqpParam);
-        strcpy((char*)next_pos, anqpParam->valuestring);
+        if(strlen(anqpParam->valuestring) > 3) {
+            wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d: Invalid Language Code. Discarding Configuration\n", __func__, __LINE__);
+            cJSON_Delete(passPointStats);
+            return webconfig_error_decode;
+        }
+        snprintf((char*)next_pos, 4, "%s", anqpParam->valuestring);
         next_pos += strlen(anqpParam->valuestring);
         anqpParam = cJSON_GetObjectItem(anqpEntry,"Name");
         if(strlen(anqpParam->valuestring) > 255){
@@ -1890,11 +1895,11 @@ webconfig_error_t decode_vap_common_object(const cJSON *vap, wifi_vap_info_t *va
         vap_info->u.bss_info.wps.methods = param->valuedouble;
         // WpsConfigPin
         decode_param_allow_empty_string(vap, "WpsConfigPin", param);
-        strcpy(vap_info->u.bss_info.wps.pin, param->valuestring);
+        snprintf(vap_info->u.bss_info.wps.pin, sizeof(vap_info->u.bss_info.wps.pin), "%s", param->valuestring);
     }
     // BeaconRateCtl
     decode_param_string(vap, "BeaconRateCtl", param);
-    strcpy(vap_info->u.bss_info.beaconRateCtl, param->valuestring);
+    snprintf(vap_info->u.bss_info.beaconRateCtl, sizeof(vap_info->u.bss_info.beaconRateCtl), "%s", param->valuestring);
 
     // connected_building_enabled params
     decode_param_allow_empty_bool(vap, "Connected_building_enabled", param, connected_value);
@@ -2802,6 +2807,10 @@ webconfig_error_t decode_radio_setup_object(const cJSON *obj_radio_setup, rdk_wi
     decode_param_array(obj_radio_setup, "VapMap", obj_array);
 
     vap_map->num_vaps = cJSON_GetArraySize(obj_array);
+    if (vap_map->num_vaps > MAX_NUM_VAP_PER_RADIO) {
+        wifi_util_error_print(WIFI_WEBCONFIG, "%s:%d: num_vaps (%d) exceeds max allowed. Truncating.\n", __func__, __LINE__, vap_map->num_vaps);
+        vap_map->num_vaps = MAX_NUM_VAP_PER_RADIO;
+    }
     for (i = 0; i < vap_map->num_vaps; i++) {
         obj = cJSON_GetArrayItem(obj_array, i);
 
@@ -3051,7 +3060,7 @@ webconfig_error_t decode_radio_object(const cJSON *obj_radio, rdk_wifi_radio_t *
 
     // RadioName
     decode_param_string(obj_radio, "RadioName", param);
-    strcpy(radio->name, param->valuestring);
+    snprintf(radio->name, sizeof(radio->name), "%s", param->valuestring);
 
     // FreqBand
     decode_param_integer(obj_radio, "FreqBand", param);
@@ -3099,7 +3108,7 @@ webconfig_error_t decode_radio_object(const cJSON *obj_radio, rdk_wifi_radio_t *
     memset(tmp_buf, 0, sizeof(tmp_buf));
     snprintf(tmp_buf, sizeof(tmp_buf), "%s", param->valuestring);
     char *token = strtok_r(tmp_buf, ",", &ctx);
-    while (token != NULL) {
+    while (token != NULL && idx < MAX_CHANNELS) {
         sscanf(token, "%3d:%1d", &radio_info->channel_map[idx].ch_number,
             (int *)&radio_info->channel_map[idx].ch_state);
         idx++;
