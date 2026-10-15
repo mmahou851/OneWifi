@@ -2549,6 +2549,7 @@ static void frame_802_11_injector_Handler(char *event_name, bus_data_prop_t *p_d
     frame_data_t frame_data;
     memset(&frame_data, 0, sizeof(frame_data));
 
+    wifi_util_dbg_print(WIFI_CTRL, "%s Enter Manish %d", __func__, __LINE__);
     wifi_util_dbg_print(WIFI_CTRL, "%s:%d Recvd Event\n", __func__, __LINE__);
 
     if (p_data->value.data_type != bus_data_type_bytes) {
@@ -2615,6 +2616,8 @@ static void frame_802_11_injector_Handler(char *event_name, bus_data_prop_t *p_d
             frame_data.frame.len, frame_data.frame.type, frame_data.frame.dir, frame_data.frame.recv_freq);
 #endif
 #endif
+
+    wifi_util_dbg_print(WIFI_CTRL, "%s Exit Manish %d", __func__, __LINE__);
     }
 }
 
