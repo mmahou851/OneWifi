@@ -118,6 +118,8 @@ void greylist_cache_timeout (struct hostapd_data *hapd)
     u32 timeleft=0;
     u32 timeout=TWENTYFOUR_HR_IN_SEC;
 
+    wpa_printf(MSG_DEBUG, "manish - Entering %s", __func__);
+
     /* Open the file to get the list of greylisted mac*/
     if ((fptr = fopen("/nvram/greylist_mac.txt", "r")) == NULL) {
         wpa_printf(MSG_DEBUG,"No such file, no greylist client\n");
@@ -160,6 +162,7 @@ void greylist_cache_timeout (struct hostapd_data *hapd)
         eloop_register_timeout(timeout, 0, wifi_del_mac_handler, mac_data, hapd); //start the timer for the client mac
     }
     fclose(fptr);
+    wpa_printf(MSG_DEBUG, "manish - Exiting %s", __func__);
     return;
 }
 #endif //FEATURE_SUPPORT_RADIUSGREYLIST

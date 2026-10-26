@@ -4972,6 +4972,7 @@ bool interworking_serv_set_param_string_value(void *obj_ins_context, char *param
     scratch_data_buff_t *output_value)
 {
     wifi_util_info_print(WIFI_DMCLI, "%s:%d: param name:%s\n", __func__, __LINE__, param_name);
+    wifi_util_dbg_print(WIFI_DMCLI, "%s:%d: manish - Entering %s\n", __func__, __LINE__, __func__);
     wifi_vap_info_t *pcfg = (wifi_vap_info_t *)obj_ins_context;
     DM_CHECK_NULL_WITH_RC(pcfg, false);
     wifi_platform_property_t *p_wifi_prop =
@@ -5018,6 +5019,7 @@ bool interworking_serv_set_param_string_value(void *obj_ins_context, char *param
         return false;
     }
 
+    wifi_util_dbg_print(WIFI_DMCLI, "%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
     return true;
 }
 

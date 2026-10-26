@@ -515,6 +515,7 @@ void callback_Wifi_Radio_Config(ovsdb_update_monitor_t *mon,
     wifi_rfc_dml_parameters_t *rfc_param = get_wifi_db_rfc_parameters();
 
     wifi_util_dbg_print(WIFI_DB,"%s:%d\n", __func__, __LINE__);
+    wifi_util_dbg_print(WIFI_DB,"%s:%d: manish - Entering %s\n", __func__, __LINE__, __func__);
 
     if (dbwritten == false) {
         wifi_util_info_print(WIFI_DB, "%s:%d: Db is not initialised yet\n", __func__, __LINE__);
@@ -682,6 +683,7 @@ void callback_Wifi_Radio_Config(ovsdb_update_monitor_t *mon,
     }
 
     stop_wifi_sched_timer(index, ctrl, wifi_radio_sched);
+    wifi_util_dbg_print(WIFI_DB,"%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
 }
 
 /************************************************************************************
@@ -2321,6 +2323,8 @@ int wifidb_get_wifi_radio_config(int radio_index, wifi_radio_operationParam_t *c
     static bool is_bootup = TRUE;
     wifi_rfc_dml_parameters_t *rfc_param = get_wifi_db_rfc_parameters();
 
+    wifi_util_dbg_print(WIFI_DB,"%s:%d: manish - Entering %s\n", __func__, __LINE__, __func__);
+
     if((config == NULL) || (convert_radio_to_name(radio_index,name)!=0))
     {
         wifidb_print("%s:%d Failed to Get Radio Config \n",__func__, __LINE__);
@@ -2493,6 +2497,7 @@ int wifidb_get_wifi_radio_config(int radio_index, wifi_radio_operationParam_t *c
     wifi_util_dbg_print(WIFI_DB,"%s:%d: Wifi_Radio_Config data enabled=%d freq_band=%d auto_channel_enabled=%d channel=%d  channel_width=%d hw_mode=%d csa_beacon_count=%d country=%d operatingEnvironment=%d dcs_enabled=%d numSecondaryChannels=%d channelSecondary=%s dtim_period %d beacon_interval %d operating_class %d basic_data_transmit_rate %d operational_data_transmit_rate %d  fragmentation_threshold %d guard_interval %d transmit_power %d rts_threshold %d factory_reset_ssid = %d, radio_stats_measuring_rate = %d, radio_stats_measuring_interval = %d, cts_protection %d, obss_coex= %d, stbc_enable= %d, greenfield_enable= %d, user_control= %d, admin_control= %d,chan_util_threshold= %d, chan_util_selfheal_enable= %d, eco_power_down=%d DFSTimer:%d radarDetected:%s, amsduTid:[%d, %d, %d, %d, %d, %d, %d, %d]\n",__func__, __LINE__,config->enable,config->band,config->autoChannelEnabled,config->channel,config->channelWidth,config->variant,config->csa_beacon_count,config->countryCode,config->operatingEnvironment,config->DCSEnabled,config->numSecondaryChannels,cfg->secondary_channels_list,config->dtimPeriod,config->beaconInterval,config->operatingClass,config->basicDataTransmitRates,config->operationalDataTransmitRates,config->fragmentationThreshold,config->guardInterval,config->transmitPower,config->rtsThreshold,config->factoryResetSsid,config->radioStatsMeasuringInterval,config->radioStatsMeasuringInterval,config->ctsProtection,config->obssCoex,config->stbcEnable,config->greenFieldEnable,config->userControl,config->adminControl,config->chanUtilThreshold,config->chanUtilSelfHealEnable, config->EcoPowerDown, config->DFSTimer, config->radarDetected, config->amsduTid[0], config->amsduTid[1], config->amsduTid[2], config->amsduTid[3], config->amsduTid[4], config->amsduTid[5], config->amsduTid[6], config->amsduTid[7]);
     wifi_util_dbg_print(WIFI_DB, " %s:%d Wifi_Radio_Config data Tscan=%lu Nscan=%lu Tidle=%lu \n", __FUNCTION__, __LINE__, feat_config->OffChanTscanInMsec, feat_config->OffChanNscanInSec, feat_config->OffChanTidleInSec);
     free(cfg);
+    wifi_util_dbg_print(WIFI_DB,"%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
     return RETURN_OK;
 }
 
@@ -2895,6 +2900,9 @@ void wifidb_get_wifi_macfilter_config()
     int vap_index;
 
     g_wifidb = (wifi_db_t*) get_wifidb_obj();
+
+    wifi_util_dbg_print(WIFI_DB,"%s:%d: manish - Entering %s\n", __func__, __LINE__, __func__);
+
     pcfg = onewifi_ovsdb_table_select_where(g_wifidb->wifidb_sock_path, &table_Wifi_MacFilter_Config, NULL, &count);
     if (pcfg == NULL) {
         wifidb_print("%s:%d Table table_Wifi_MacFilter_Config not found, entry count=%d\n",__func__, __LINE__, count);
@@ -2964,6 +2972,7 @@ void wifidb_get_wifi_macfilter_config()
         pcfg++;
     }
 
+    wifi_util_dbg_print(WIFI_DB,"%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
     return;
 }
 
