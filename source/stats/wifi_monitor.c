@@ -5406,12 +5406,14 @@ long get_sys_uptime()
  unsigned int get_upload_period  (int oldInterval)
  {
      FILE *fp;
-     char buff[64];
+     char buff[64] = {0};
      char *ptr;
      int logInterval=oldInterval;
      struct timeval polling_time = {0};
      time_t  time_gap = 0;
      gettimeofday(&polling_time, NULL);
+
+     wifi_util_dbg_print(WIFI_MON, "%s:%d: manish - Entering %s\n", __func__, __LINE__, __func__);
 
      if ((fp = fopen("/tmp/upload", "r")) == NULL) {
      /* Minimum LOG Interval we can set is 60 sec, just verify every 1 min any change in the LogInterval
@@ -5422,6 +5424,7 @@ long get_sys_uptime()
                logInterval=readLogInterval();
                lastpolledtime = polling_time.tv_sec;
           }
+          wifi_util_dbg_print(WIFI_MON, "%s:%d: manish - Exiting %s (no file)\n", __func__, __LINE__, __func__);
           return logInterval;
      }
 
@@ -5431,7 +5434,14 @@ long get_sys_uptime()
      }
      fclose(fp);
 
-     return atoi(buff);
+     /* /tmp is world-writable: accept only values within the same limits as the WiFi DB value */
+     logInterval = atoi(buff);
+     if ((logInterval < Min_LogInterval) || (logInterval > Max_LogInterval)) {
+         wifi_util_dbg_print(WIFI_MON, "%s:%d: manish - Exiting %s (clamped)\n", __func__, __LINE__, __func__);
+         return readLogInterval();
+     }
+     wifi_util_dbg_print(WIFI_MON, "%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
+     return logInterval;
 }
 
 wifi_monitor_t *get_wifi_monitor()

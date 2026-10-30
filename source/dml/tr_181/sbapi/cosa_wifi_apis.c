@@ -84,6 +84,8 @@
 #include <ctype.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
+#include <errno.h>
 #include <unistd.h>
 #include <strings.h>
 #include <time.h>
@@ -1603,15 +1605,44 @@ ValidateActiveMsmtPlanID(UCHAR *pPlanId)
 static int writeToJson(char *data, char *file)
 {
     FILE *fp;
-    fp = fopen(file, "w");
-    if (fp == NULL)
+    int fd;
+    size_t len = strlen(data);
+
+    wifi_util_dbg_print(WIFI_DMCLI, "%s:%d: manish - Entering %s\n", __func__, __LINE__, __func__);
+
+    /* O_NOFOLLOW: refuse to write through a symlink planted at the target path (CWE-59). */
+    fd = open(file, O_WRONLY | O_CREAT | O_TRUNC | O_NOFOLLOW, 0644);
+    if (fd < 0)
     {
-        CcspTraceWarning(("%s : %d Failed to open file %s\n", __FUNCTION__,__LINE__,file));
+        CcspTraceWarning(("%s : %d Failed to open file %s, errno %d\n", __FUNCTION__,__LINE__,file,errno));
+        wifi_util_dbg_print(WIFI_DMCLI, "%s:%d: manish - Exiting %s (open failed)\n", __func__, __LINE__, __func__);
         return -1;
     }
 
-    fwrite(data, strlen(data), 1, fp);
-    fclose(fp);
+    fp = fdopen(fd, "w");
+    if (fp == NULL)
+    {
+        CcspTraceWarning(("%s : %d Failed to fdopen file %s, errno %d\n", __FUNCTION__,__LINE__,file,errno));
+        close(fd);
+        wifi_util_dbg_print(WIFI_DMCLI, "%s:%d: manish - Exiting %s (fdopen failed)\n", __func__, __LINE__, __func__);
+        return -1;
+    }
+
+    if ((len > 0) && (fwrite(data, len, 1, fp) != 1))
+    {
+        CcspTraceWarning(("%s : %d Failed to write file %s\n", __FUNCTION__,__LINE__,file));
+        fclose(fp);
+        wifi_util_dbg_print(WIFI_DMCLI, "%s:%d: manish - Exiting %s (write failed)\n", __func__, __LINE__, __func__);
+        return -1;
+    }
+
+    if (fclose(fp) != 0)
+    {
+        CcspTraceWarning(("%s : %d Failed to close file %s, errno %d\n", __FUNCTION__,__LINE__,file,errno));
+        wifi_util_dbg_print(WIFI_DMCLI, "%s:%d: manish - Exiting %s (close failed)\n", __func__, __LINE__, __func__);
+        return -1;
+    }
+    wifi_util_dbg_print(WIFI_DMCLI, "%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
     return 0;
 }
 

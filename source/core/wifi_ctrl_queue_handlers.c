@@ -1486,14 +1486,35 @@ void kick_all_macs(int vap_index, int timeout, rdk_wifi_vap_info_t *rdk_vap_info
 {
     wifi_util_dbg_print(WIFI_CTRL, "%s:%d Entry - vap %d, timeout %d\n", __func__, __LINE__,vap_index,
         timeout);
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d: manish - Entering %s\n", __func__, __LINE__, __func__);
 
     assoc_dev_data_t *assoc_dev_data = NULL;
     char *assoc_maclist = NULL;
     mac_addr_str_t mac_str;
     kick_details_t *kick_details = NULL;
     bool has_successful_operations = false;
+    uint32_t dev_count = 0;
+    size_t maclist_size = 0;
+    size_t offset = 0;
 
-    assoc_maclist = (char *)malloc(2048);
+    if (rdk_vap_info == NULL || rdk_vap_info->associated_devices_map == NULL) {
+        wifi_util_error_print(WIFI_CTRL, "%s:%d Associated devices map is NULL for vap %d\n",
+            __func__, __LINE__, vap_index);
+        goto cleanup;
+    }
+
+    dev_count = hash_map_count(rdk_vap_info->associated_devices_map);
+    /* 17 chars per MAC + 1 char ',' + 1 char null terminator */
+    maclist_size = (dev_count * 18) + 1;
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d: manish - vap %d, dev_count=%u, calculated maclist_size=%zu\n",
+        __func__, __LINE__, vap_index, dev_count, maclist_size);
+    if (maclist_size < 2048) {
+        maclist_size = 2048;
+    }
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d: manish - vap %d, final allocated maclist_size=%zu\n",
+        __func__, __LINE__, vap_index, maclist_size);
+
+    assoc_maclist = (char *)malloc(maclist_size);
     kick_details = (kick_details_t *)malloc(sizeof(kick_details_t));
 
     if (assoc_maclist == NULL || kick_details == NULL) {
@@ -1502,14 +1523,8 @@ void kick_all_macs(int vap_index, int timeout, rdk_wifi_vap_info_t *rdk_vap_info
         goto cleanup;
     }
 
-    memset(assoc_maclist, 0, 2048);
+    memset(assoc_maclist, 0, maclist_size);
     memset(kick_details, 0, sizeof(kick_details_t));
-
-    if (rdk_vap_info->associated_devices_map == NULL) {
-        wifi_util_error_print(WIFI_CTRL, "%s:%d Associated devices map is NULL for vap %d\n",
-            __func__, __LINE__, vap_index);
-        goto cleanup;
-    }
 
     assoc_dev_data = hash_map_get_first(rdk_vap_info->associated_devices_map);
     while (assoc_dev_data != NULL) {
@@ -1517,9 +1532,15 @@ void kick_all_macs(int vap_index, int timeout, rdk_wifi_vap_info_t *rdk_vap_info
         to_mac_str(assoc_dev_data->dev_stats.cli_MACAddress, mac_str);
 
         if (handle_acl_operation(vap_index, mac_str, vap_info, rdk_vap_info, true) == RETURN_OK) {
-            strcat(assoc_maclist, mac_str);
-            strcat(assoc_maclist, ",");
-            has_successful_operations = true;
+            int written = snprintf(assoc_maclist + offset, maclist_size - offset, "%s,", mac_str);
+            if (written > 0 && (size_t)written < (maclist_size - offset)) {
+                offset += written;
+                has_successful_operations = true;
+            } else {
+                wifi_util_error_print(WIFI_CTRL, "%s:%d maclist buffer truncated for vap %d\n",
+                    __func__, __LINE__, vap_index);
+                break;
+            }
         }
 
         assoc_dev_data = hash_map_get_next(rdk_vap_info->associated_devices_map, assoc_dev_data);
@@ -1535,6 +1556,7 @@ void kick_all_macs(int vap_index, int timeout, rdk_wifi_vap_info_t *rdk_vap_info
     wifi_util_dbg_print(WIFI_CTRL, "%s:%d Exit - vap %d, counter %d, config_change %s\n", __func__, __LINE__,
         vap_index, rdk_vap_info->kick_device_task_counter,
         rdk_vap_info->kick_device_config_change ? "TRUE" : "FALSE");
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
     return;
 
 cleanup:
@@ -1544,6 +1566,7 @@ cleanup:
     if (kick_details) {
         free(kick_details);
     }
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
 }
 
 void process_frame_drop_unenc_command_event(void *data)
@@ -4758,8 +4781,10 @@ void handle_webconfig_event(wifi_ctrl_t *ctrl, const char *raw, unsigned int len
     cJSON *json = NULL;
 
     data = (webconfig_subdoc_data_t *)malloc(sizeof(webconfig_subdoc_data_t));
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d: manish - Entering %s\n", __func__, __LINE__, __func__);
     if (data == NULL) {
         wifi_util_error_print(WIFI_CTRL,"%s:%d: Failed to allocate memory\n", __func__, __LINE__);
+        wifi_util_dbg_print(WIFI_CTRL, "%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
         return;
     }
     memset(data, 0, sizeof(webconfig_subdoc_data_t));
@@ -4777,12 +4802,22 @@ void handle_webconfig_event(wifi_ctrl_t *ctrl, const char *raw, unsigned int len
         if (raw == NULL) {
             free(data);
             data = NULL;
+            wifi_util_dbg_print(WIFI_CTRL, "%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
             return;
         }
 
         json = cJSON_Parse(raw);
+        if (json == NULL) {
+            wifi_util_error_print(WIFI_CTRL, "%s:%d: Failed to parse webconfig data for subtype %d\n",
+                __func__, __LINE__, subtype);
+            free(data);
+            data = NULL;
+            wifi_util_dbg_print(WIFI_CTRL, "%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
+            return;
+        }
         subdoc_type = find_subdoc_type(config, json);
         cJSON_Delete(json);
+        json = NULL;
         switch (subdoc_type) {
         case webconfig_subdoc_type_private:
             num_ssid += get_list_of_private_ssid(&mgr->hal_cap.wifi_prop, MAX_NUM_RADIOS,
@@ -4848,6 +4883,7 @@ void handle_webconfig_event(wifi_ctrl_t *ctrl, const char *raw, unsigned int len
             wifi_util_error_print(WIFI_CTRL, "%s:%d Empty raw data\n", __func__, __LINE__);
             free(data);
             data = NULL;
+            wifi_util_dbg_print(WIFI_CTRL, "%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
             return;
         }
         webconfig_decode(config, data, raw);
@@ -4863,6 +4899,7 @@ void handle_webconfig_event(wifi_ctrl_t *ctrl, const char *raw, unsigned int len
                 __func__, __LINE__);
             free(data);
             data = NULL;
+            wifi_util_dbg_print(WIFI_CTRL, "%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
             return;
         }
         apps_mgr_analytics_event(&ctrl->apps_mgr, wifi_event_type_webconfig, subtype, NULL);
@@ -4916,6 +4953,7 @@ void handle_webconfig_event(wifi_ctrl_t *ctrl, const char *raw, unsigned int len
 
     free(data);
     data = NULL;
+    wifi_util_dbg_print(WIFI_CTRL, "%s:%d: manish - Exiting %s\n", __func__, __LINE__, __func__);
 }
 
 void handle_wifiapi_event(void *data, unsigned int len, wifi_event_subtype_t subtype)
